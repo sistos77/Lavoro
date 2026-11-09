@@ -1,396 +1,246 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tracker Straordinari</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0d0d0d">
-    <style>
-        :root {
-            --bg-color: #0d0d0d;
-            --card-bg: #161616;
-            --text-color: #f0f0f0;
-            --accent-green: #00ff66;
-            --accent-fuchsia: #ff00ff;
-            --accent-yellow: #ccff00;
-            --border-color: #262626;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestione Ore di Lavoro</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --accent: #00e676;
+      --accent-minus: #ff5252;
+      --text: #ffffff;
+      --subtext: #a0a0a0;
+      --border: #333333;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text);
+      margin: 0;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-        .container {
-            width: 100%;
-            max-width: 500px;
-        }
+    .container {
+      width: 100%;
+      max-width: 480px;
+    }
 
-        h1 {
-            color: var(--accent-green);
-            font-size: 1.5rem;
-            text-align: center;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: var(--accent);
+    }
 
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        }
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      margin-bottom: 20px;
+    }
 
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
+    .form-group {
+      margin-bottom: 14px;
+    }
 
-        .stat-box {
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-        }
+    label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      color: var(--subtext);
+    }
 
-        .stat-box span {
-            display: block;
-            font-size: 0.8rem;
-            color: #888;
-            margin-bottom: 4px;
-        }
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background-color: #2a2a2a;
+      color: #fff;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
 
-        .stat-box strong {
-            font-size: 1.2rem;
-            color: var(--accent-yellow);
-        }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--accent);
+      color: #000;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 10px;
+    }
 
-        label {
-            display: block;
-            font-size: 0.85rem;
-            color: #aaa;
-            margin-bottom: 6px;
-        }
+    button:active {
+      opacity: 0.8;
+    }
 
-        input, textarea, select {
-            width: 100%;
-            padding: 10px;
-            background: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-color);
-            font-size: 1rem;
-            margin-bottom: 12px;
-            box-sizing: border-box;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
 
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: var(--accent-green);
-        }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--accent-green);
-            color: #000;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
+    th {
+      color: var(--subtext);
+    }
 
-        button:active {
-            opacity: 0.8;
-        }
+    .positive {
+      color: var(--accent);
+      font-weight: bold;
+    }
 
-        .btn-secondary {
-            background-color: transparent;
-            border: 1px solid var(--accent-yellow);
-            color: var(--accent-yellow);
-            margin-top: 8px;
-        }
-
-        .entry-item {
-            background: var(--bg-color);
-            border-left: 4px solid var(--accent-fuchsia);
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-        .entry-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85rem;
-            color: var(--accent-yellow);
-            margin-bottom: 4px;
-        }
-
-        .entry-hours {
-            font-weight: bold;
-            color: var(--accent-green);
-        }
-
-        .entry-notes {
-            font-size: 0.9rem;
-            color: #ccc;
-            word-break: break-word;
-        }
-
-        .delete-btn {
-            background: none;
-            border: none;
-            color: #ff4444;
-            font-size: 0.8rem;
-            cursor: pointer;
-            padding: 0;
-            width: auto;
-            float: right;
-        }
-
-        .filter-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-    </style>
+    .negative {
+      color: var(--accent-minus);
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Tracker Straordinari</h1>
+  <div class="container">
+    <h1>Ore di Lavoro</h1>
 
-        <!-- Riepilogo -->
-        <div class="stats-grid">
-            <div class="stat-box">
-                <span>Totale (Mese Selezionato)</span>
-                <strong id="totalHours">0.00 h</strong>
-            </div>
-            <div class="stat-box">
-                <span>Registrazioni</span>
-                <strong id="totalEntries">0</strong>
-            </div>
+    <div class="card">
+      <form id="workForm">
+        <div class="form-group">
+          <label for="date">Data</label>
+          <input type="date" id="date" required>
         </div>
 
-        <!-- Form Inserimento -->
-        <div class="card">
-            <form id="overtimeForm">
-                <label for="date">Data</label>
-                <input type="date" id="date" required>
-
-                <label for="hours">Ore di Straordinario (es. 1.5 o 2)</label>
-                <input type="number" id="hours" step="0.25" min="0.25" placeholder="1.5" required>
-
-                <label for="notes">Note / Motivazione</label>
-                <textarea id="notes" rows="2" placeholder="Es. Chiusura inventario, consegna urgente..."></textarea>
-
-                <button type="submit">Salva Straordinario</button>
-            </form>
+        <div class="form-group">
+          <label for="startTime">Ora Inizio</label>
+          <input type="time" id="startTime" value="08:00" required>
         </div>
 
-        <!-- Filtri e Storico -->
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h3 style="margin: 0; font-size: 1rem; color: var(--accent-fuchsia);">Storico</h3>
-            </div>
-
-            <label for="monthFilter">Filtra per mese</label>
-            <select id="monthFilter">
-                <option value="all">Tutti i mesi (Storico completo)</option>
-            </select>
-
-            <div id="entriesList" style="margin-top: 12px;"></div>
-
-            <button type="button" class="btn-secondary" onclick="exportToCSV()">Esporta in CSV (Excel)</button>
+        <div class="form-group">
+          <label for="endTime">Ora Fine</label>
+          <input type="time" id="endTime" value="17:00" required>
         </div>
+
+        <div class="form-group">
+          <label for="breakMinutes">Pausa (minuti)</label>
+          <input type="number" id="breakMinutes" value="60" min="0" step="5">
+        </div>
+
+        <button type="submit">Salva Giornata</button>
+      </form>
     </div>
 
-    <script>
-        // Imposta la data odierna di default nel form
-        document.getElementById('date').valueAsDate = new Date();
+    <div class="card">
+      <h2 style="font-size:1.1rem; margin-top:0;">Registro</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Lavorate</th>
+            <th>Straordinario</th>
+          </tr>
+        </thead>
+        <tbody id="logTableBody">
+          <!-- I dati salvati compariranno qui -->
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-        let entries = JSON.parse(localStorage.getItem('overtime_entries')) || [];
+  <script>
+    // 8 ore standard giornaliere = 480 minuti
+    const DAILY_STANDARD_MINUTES = 8 * 60;
 
-        const form = document.getElementById('overtimeForm');
-        const entriesList = document.getElementById('entriesList');
-        const totalHoursEl = document.getElementById('totalHours');
-        const totalEntriesEl = document.getElementById('totalEntries');
-        const monthFilter = document.getElementById('monthFilter');
+    // Imposta la data di oggi come default nel campo data
+    document.getElementById('date').valueAsDate = new Date();
 
-        // Popola dinamicamente il menu a tendina dei mesi in base ai dati salvati
-        function updateMonthFilterOptions() {
-            const currentSelected = monthFilter.value;
-            const monthsSet = new Set();
+    function timeToMinutes(timeStr) {
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return hours * 60 + minutes;
+    }
 
-            entries.forEach(entry => {
-                if (entry.date) {
-                    const yearMonth = entry.date.substring(0, 7); // formato "YYYY-MM"
-                    monthsSet.add(yearMonth);
-                }
-            });
+    function formatMinutes(totalMinutes, showSign = false) {
+      const isNegative = totalMinutes < 0;
+      const absMinutes = Math.abs(totalMinutes);
+      const hours = String(Math.floor(absMinutes / 60)).padStart(2, '0');
+      const minutes = String(absMinutes % 60).padStart(2, '0');
+      
+      let sign = "";
+      if (showSign) {
+        sign = isNegative ? "-" : "+";
+      }
+      return `${sign}${hours}:${minutes}`;
+    }
 
-            // Ordina i mesi dal più recente al più vecchio
-            const sortedMonths = Array.from(monthsSet).sort().reverse();
+    function loadLogs() {
+      const logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+      const tbody = document.getElementById('logTableBody');
+      tbody.innerHTML = '';
 
-            monthFilter.innerHTML = '<option value="all">Tutti i mesi (Storico completo)</option>';
-            
-            sortedMonths.forEach(ym => {
-                const [year, month] = ym.split('-');
-                const dateObj = new Date(year, month - 1, 1);
-                const monthName = dateObj.toLocaleString('it-IT', { month: 'long', year: 'numeric' });
-                // Capitalizza la prima lettera
-                const formattedName = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-                
-                const option = document.createElement('option');
-                option.value = ym;
-                option.textContent = formattedName;
-                monthFilter.appendChild(option);
-            });
+      logs.reverse().forEach(entry => {
+        const tr = document.createElement('tr');
+        const overtimeClass = entry.overtimeMinutes >= 0 ? 'positive' : 'negative';
+        
+        tr.innerHTML = `
+          <td>${entry.date}</td>
+          <td>${entry.workedFormatted}</td>
+          <td class="${overtimeClass}">${entry.overtimeFormatted}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
 
-            // Ripristina la selezione precedente se esiste ancora
-            if (Array.from(monthFilter.options).some(opt => opt.value === currentSelected)) {
-                monthFilter.value = currentSelected;
-            } else {
-                // Default sul mese corrente se presente, altrimenti 'all'
-                const currentYM = new Date().toISOString().substring(0, 7);
-                if (Array.from(monthFilter.options).some(opt => opt.value === currentYM)) {
-                    monthFilter.value = currentYM;
-                }
-            }
-        }
+    document.getElementById('workForm').addEventListener('submit', function (e) {
+      e.preventDefault();
 
-        function render() {
-            updateMonthFilterOptions();
-            
-            entriesList.innerHTML = '';
-            let total = 0;
-            let filteredCount = 0;
+      const date = document.getElementById('date').value;
+      const startMins = timeToMinutes(document.getElementById('startTime').value);
+      const endMins = timeToMinutes(document.getElementById('endTime').value);
+      const breakMins = parseInt(document.getElementById('breakMinutes').value, 10) || 0;
 
-            const selectedFilter = monthFilter.value;
+      let workedMinutes = endMins - startMins - breakMins;
+      if (workedMinutes < 0) workedMinutes = 0;
 
-            // Ordina per data decrescente
-            const sortedEntries = [...entries].sort((a, b) => new Date(b.date) - new Date(a.date));
+      const overtimeMinutes = workedMinutes - DAILY_STANDARD_MINUTES;
 
-            sortedEntries.forEach((entry) => {
-                const entryYM = entry.date ? entry.date.substring(0, 7) : '';
-                const matchesFilter = (selectedFilter === 'all' || entryYM === selectedFilter);
+      const entry = {
+        id: Date.now(),
+        date: date,
+        workedFormatted: formatMinutes(workedMinutes),
+        overtimeFormatted: formatMinutes(overtimeMinutes, true),
+        overtimeMinutes: overtimeMinutes
+      };
 
-                if (matchesFilter) {
-                    total += parseFloat(entry.hours);
-                    filteredCount++;
+      const currentData = JSON.parse(localStorage.getItem('work_logs') || '[]');
+      currentData.push(entry);
+      localStorage.setItem('work_logs', JSON.stringify(currentData));
 
-                    // Trova l'indice reale nell'array principale per poter eliminare correttamente
-                    const realIndex = entries.indexOf(entry);
+      loadLogs();
+    });
 
-                    const div = document.createElement('div');
-                    div.className = 'entry-item';
-                    div.innerHTML = `
-                        <div class="entry-header">
-                            <span>${entry.date}</span>
-                            <span class="entry-hours">+${entry.hours} h</span>
-                        </div>
-                        <div class="entry-notes">${entry.notes ? escapeHtml(entry.notes) : '<em>Nessuna nota</em>'}</div>
-                        <button class="delete-btn" onclick="deleteEntry(${realIndex})">Elimina</button>
-                        <div style="clear: both;"></div>
-                    `;
-                    entriesList.appendChild(div);
-                }
-            });
+    // Carica lo storico al primo avvio
+    loadLogs();
 
-            if (filteredCount === 0) {
-                entriesList.innerHTML = '<p style="color: #666; font-size: 0.9rem; text-align: center;">Nessun dato per il periodo selezionato</p>';
-            }
+    // Registrazione Service Worker per PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
 
-            totalHoursEl.textContent = total.toFixed(2) + ' h';
-            totalEntriesEl.textContent = filteredCount;
-            localStorage.setItem('overtime_entries', JSON.stringify(entries));
-        }
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const date = document.getElementById('date').value;
-            const hours = document.getElementById('hours').value;
-            const notes = document.getElementById('notes').value;
-
-            entries.push({ date, hours, notes });
-            form.reset();
-            document.getElementById('date').valueAsDate = new Date();
-            
-            // Imposta automaticamente il filtro sul mese della nuova voce inserita
-            const newYM = date.substring(0, 7);
-            updateMonthFilterOptions();
-            if (Array.from(monthFilter.options).some(opt => opt.value === newYM)) {
-                monthFilter.value = newYM;
-            }
-
-            render();
-        });
-
-        monthFilter.addEventListener('change', () => {
-            render();
-        });
-
-        window.deleteEntry = function(index) {
-            if (confirm('Vuoi eliminare questa registrazione?')) {
-                entries.splice(index, 1);
-                render();
-            }
-        }
-
-        // Funzione per l'esportazione in CSV compatibile con Excel
-        window.exportToCSV = function() {
-            if (entries.length === 0) {
-                alert('Nessun dato da esportare.');
-                return;
-            }
-
-            // Ordinamento per data crescente per l'esportazione
-            const exportEntries = [...entries].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            let csvContent = "data:text/csv;charset=utf-8,Data;Ore;Note\r\n";
-
-            exportEntries.forEach(entry => {
-                // Pulisce le note da eventuali punti e virgola o ritorni a capo per non rompere il CSV
-                const cleanNotes = entry.notes ? entry.notes.replace(/[\r\n]+/g, " ").replace(/;/g, ",") : "";
-                csvContent += `${entry.date};${entry.hours};"${cleanNotes}"\r\n`;
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "straordinari_" + new Date().toISOString().slice(0,10) + ".csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function escapeHtml(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        }
-
-        // Registrazione Service Worker per PWA
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-
-        render();
-    </script>
 </body>
 </html>
