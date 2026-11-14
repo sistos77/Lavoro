@@ -12,6 +12,7 @@
       --accent: #00e676;
       --accent-minus: #ff5252;
       --accent-excel: #00e5ff;
+      --accent-whatsapp: #25d366;
       --text: #ffffff;
       --subtext: #a0a0a0;
       --border: #333333;
@@ -111,6 +112,11 @@
     .btn-excel {
       background-color: var(--accent-excel);
       color: #000;
+    }
+
+    .btn-whatsapp {
+      background-color: var(--accent-whatsapp);
+      color: #fff;
     }
 
     /* Box riepilogo mensile */
@@ -295,9 +301,9 @@
       </table>
     </div>
 
-    <!-- Nuova Card Esportazione Excel -->
+    <!-- Card Esportazione Excel e WhatsApp -->
     <div class="card">
-      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-excel);">Esporta in Excel</h2>
+      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-excel);">Esporta Dati</h2>
       <div class="row-inputs">
         <div class="form-group">
           <label for="exportStart">Dal giorno</label>
@@ -309,13 +315,13 @@
         </div>
       </div>
       <button type="button" class="btn-excel" onclick="exportToExcel()">Scarica File Excel (.csv)</button>
+      <button type="button" class="btn-whatsapp" onclick="exportToWhatsApp()">Invia su WhatsApp 💬</button>
     </div>
   </div>
 
   <script>
     const DAILY_STANDARD_MINUTES = 8 * 60; // 8 ore standard
 
-    // Imposta data odierna nel form e primo/ultimo giorno del mese corrente nell'export
     const today = new Date();
     document.getElementById('date').valueAsDate = today;
 
@@ -506,7 +512,6 @@
         return;
       }
 
-      // Costruzione CSV compatibile con Excel italiano (separatore punto e virgola e BOM UTF-8)
       let csvContent = "\uFEFF"; 
       csvContent += "Data;Inizio Mattina;Fine Mattina;Inizio Pomeriggio;Fine Pomeriggio;Ore Lavorate;Straordinario;Note\n";
 
@@ -522,7 +527,6 @@
         csvContent += `${formatDateIT(entry.date)};${entry.startM};${entry.endM};${entry.startA};${entry.endA};${entry.workedFormatted};${entry.overtimeFormatted};"${cleanNote}"\n`;
       });
 
-      // Riga totale finale
       csvContent += `\nTOTALE PERIODO;;;;;${formatMinutes(totalWorkedMins)};${formatMinutes(totalOvertimeMins, true)};\n`;
 
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -534,6 +538,59 @@
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+    };
+
+    window.exportToWhatsApp = function() {
+      const startDate = document.getElementById('exportStart').value;
+      const endDate = document.getElementById('exportEnd').value;
+
+      if (!startDate || !endDate) {
+        alert("Seleziona sia la data di inizio che la data di fine.");
+        return;
+      }
+
+      if (startDate > endDate) {
+        alert("La data di inizio non può essere successiva alla data di fine.");
+        return;
+      }
+
+      const logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+      const filtered = logs
+        .filter(entry => entry.date >= startDate && entry.date <= endDate)
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      if (filtered.length === 0) {
+        alert("Nessun dato trovato nel periodo selezionato.");
+        return;
+      }
+
+      let message = `*Riepilogo Ore di Lavoro*\n`;
+      message += `📅 Periodo: ${formatDateIT(startDate)} - ${formatDateIT(endDate)}\n\n`;
+
+      let totalWorkedMins = 0;
+      let totalOvertimeMins = 0;
+
+      filtered.forEach(entry => {
+        const [wH, wM] = entry.workedFormatted.split(':').map(Number);
+        totalWorkedMins += (wH * 60 + wM);
+        totalOvertimeMins += entry.overtimeMinutes;
+
+        message += `• *${formatDateIT(entry.date)}*\n`;
+        message += `  🕒 ${entry.startM}-${entry.endM} | ${entry.startA}-${entry.endA}\n`;
+        message += `  ⏱️ Lavorate: ${entry.workedFormatted} | Straord: ${entry.overtimeFormatted}\n`;
+        if (entry.note) {
+          message += `  📝 Nota: ${entry.note}\n`;
+        }
+        message += `\n`;
+      });
+
+      message += `-------------------\n`;
+      message += `*TOTALE ORE:* ${formatMinutes(totalWorkedMins)}\n`;
+      message += `*TOTALE STRAORDINARIO:* ${formatMinutes(totalOvertimeMins, true)}`;
+
+      // Apre WhatsApp con il testo precompilato
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
     };
 
     document.getElementById('workForm').addEventListener('submit', function (e) {
