@@ -58,7 +58,7 @@
       color: var(--subtext);
     }
 
-    input, textarea {
+    input, textarea, select {
       width: 100%;
       padding: 10px;
       border-radius: 8px;
@@ -105,6 +105,34 @@
       color: #fff;
       display: none;
       margin-top: 6px;
+    }
+
+    /* Box riepilogo mensile */
+    .summary-box {
+      background: #252525;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--border);
+    }
+
+    .summary-title {
+      font-size: 0.85rem;
+      color: var(--subtext);
+    }
+
+    .summary-value {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    .filter-container {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
     }
 
     table {
@@ -231,7 +259,21 @@
     </div>
 
     <div class="card">
-      <h2 style="font-size:1.1rem; margin-top:0;">Registro</h2>
+      <h2 style="font-size:1.1rem; margin-top:0;">Registro & Riepilogo</h2>
+      
+      <!-- Filtro Mese -->
+      <div class="filter-container">
+        <select id="monthFilter" onchange="loadLogs()">
+          <!-- Popolato dinamicamente via JS -->
+        </select>
+      </div>
+
+      <!-- Box Totale Straordinari Mese -->
+      <div class="summary-box">
+        <span class="summary-title">Totale Straordinario Mese:</span>
+        <span id="monthlyTotal" class="summary-value">+00:00</span>
+      </div>
+
       <table>
         <thead>
           <tr>
@@ -278,17 +320,75 @@
       return `${day}/${month}/${year}`;
     }
 
+    // Popola il menu a tendina dei mesi in base ai dati salvati
+    function updateMonthFilter(logs) {
+      const filterSelect = document.getElementById('monthFilter');
+      const currentVal = filterSelect.value;
+      
+      // Estrai tutti i mesi presenti nei log (formato "YYYY-MM")
+      const monthsSet = new Set();
+      logs.forEach(entry => {
+        if (entry.date) {
+          monthsSet.add(entry.date.substring(0, 7));
+        }
+      });
+
+      // Aggiungi anche il mese corrente se non ci sono log
+      const currentMonthStr = new Date().toISOString().substring(0, 7);
+      monthsSet.add(currentMonthStr);
+
+      const sortedMonths = Array.from(monthsSet).sort().reverse();
+
+      filterSelect.innerHTML = '';
+      sortedMonths.forEach(mStr => {
+        const [year, month] = mStr.split('-');
+        const dateObj = new Date(year, month - 1, 1);
+        const monthName = dateObj.toLocaleString('it-IT', { month: 'long', year: 'numeric' });
+        
+        const option = document.createElement('option');
+        option.value = mStr;
+        option.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+        filterSelect.appendChild(option);
+      });
+
+      // Ripristina la selezione precedente se esiste
+      if (currentVal && sortedMonths.includes(currentVal)) {
+        filterSelect.value = currentVal;
+      } else {
+        filterSelect.value = currentMonthStr;
+      }
+    }
+
     function loadLogs() {
       const logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+      updateMonthFilter(logs);
+
+      const selectedMonth = document.getElementById('monthFilter').value;
       const tbody = document.getElementById('logTableBody');
       tbody.innerHTML = '';
 
-      if (logs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--subtext);">Nessun inserimento</td></tr>`;
+      // Filtra i log per il mese selezionato
+      const filteredLogs = logs.filter(entry => entry.date && entry.date.startsWith(selectedMonth));
+
+      // Calcola il totale straordinario del mese in minuti
+      let totalMonthMinutes = 0;
+      filteredLogs.forEach(entry => {
+        totalMonthMinutes += entry.overtimeMinutes;
+      });
+
+      // Aggiorna il box del totale mensile
+      const monthlyTotalEl = document.getElementById('monthlyTotal');
+      monthlyTotalEl.textContent = formatMinutes(totalMonthMinutes, true);
+      monthlyTotalEl.className = "summary-value " + (totalMonthMinutes >= 0 ? "positive" : "negative");
+      monthlyTotalEl.style.padding = "2px 6px";
+      monthlyTotalEl.style.borderRadius = "4px";
+
+      if (filteredLogs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--subtext);">Nessun inserimento per questo mese</td></tr>`;
         return;
       }
 
-      logs.slice().reverse().forEach((entry) => {
+      filteredLogs.slice().reverse().forEach((entry) => {
         const tr = document.createElement('tr');
         const overtimeClass = entry.overtimeMinutes >= 0 ? 'positive' : 'negative';
         const formattedDate = formatDateIT(entry.date);
@@ -377,7 +477,6 @@
       let logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
 
       if (editId) {
-        // Modifica elemento esistente
         logs = logs.map(entry => {
           if (entry.id == editId) {
             return {
@@ -396,7 +495,6 @@
           return entry;
         });
       } else {
-        // Aggiungi nuovo elemento
         const entry = {
           id: Date.now(),
           date,
