@@ -11,8 +11,7 @@
       --card-bg: #1e1e1e;
       --accent: #00e676;
       --accent-minus: #ff5252;
-      --accent-excel: #00e5ff;
-      --accent-whatsapp: #25d366;
+      --accent-neon: #ccff00; /* Giallo fluo principale */
       --text: #ffffff;
       --subtext: #a0a0a0;
       --border: #333333;
@@ -109,14 +108,15 @@
       margin-top: 6px;
     }
 
+    /* Pulsanti Esportazione in Giallo Fluo */
     .btn-excel {
-      background-color: var(--accent-excel);
+      background-color: var(--accent-neon);
       color: #000;
     }
 
     .btn-whatsapp {
-      background-color: var(--accent-whatsapp);
-      color: #fff;
+      background-color: var(--accent-neon);
+      color: #000;
     }
 
     /* Box riepilogo mensile */
@@ -301,9 +301,9 @@
       </table>
     </div>
 
-    <!-- Card Esportazione Excel e WhatsApp -->
+    <!-- Card Esportazione Excel e WhatsApp in Giallo Fluo -->
     <div class="card">
-      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-excel);">Esporta Dati</h2>
+      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Esporta Dati</h2>
       <div class="row-inputs">
         <div class="form-group">
           <label for="exportStart">Dal giorno</label>
@@ -588,7 +588,6 @@
       message += `*TOTALE ORE:* ${formatMinutes(totalWorkedMins)}\n`;
       message += `*TOTALE STRAORDINARIO:* ${formatMinutes(totalOvertimeMins, true)}`;
 
-      // Apre WhatsApp con il testo precompilato
       const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
     };
@@ -628,7 +627,7 @@
               startA: startAStr,
               endA: endAStr,
               workedFormatted: formatMinutes(workedMinutes),
-              overtimeFormatted: formatMinutes(overtimeMinutes, true),
+              overtimeFormatted: formatMinutes(overtimeFormatted, true),
               overtimeMinutes,
               note
             };
