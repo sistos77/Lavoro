@@ -48,17 +48,17 @@
     }
 
     .form-group {
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
     label {
       display: block;
-      font-size: 0.9rem;
-      margin-bottom: 6px;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
       color: var(--subtext);
     }
 
-    input {
+    input, textarea {
       width: 100%;
       padding: 10px;
       border-radius: 8px;
@@ -67,6 +67,20 @@
       color: #fff;
       font-size: 1rem;
       box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+      height: 60px;
+    }
+
+    .row-inputs {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row-inputs .form-group {
+      flex: 1;
     }
 
     button {
@@ -86,6 +100,13 @@
       opacity: 0.8;
     }
 
+    .btn-cancel {
+      background-color: #444;
+      color: #fff;
+      display: none;
+      margin-top: 6px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -93,55 +114,119 @@
     }
 
     th, td {
-      padding: 10px;
+      padding: 10px 6px;
       text-align: left;
       border-bottom: 1px solid var(--border);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
 
     th {
       color: var(--subtext);
     }
 
-    .positive {
-      color: var(--accent);
+    .time-badge {
+      font-family: monospace;
+      color: var(--subtext);
+      font-size: 0.75rem;
+      background: #252525;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 2px;
+    }
+
+    .extra-hours {
       font-weight: bold;
+      padding: 4px 6px;
+      border-radius: 6px;
+      display: inline-block;
+      font-size: 0.75rem;
+    }
+
+    .positive {
+      color: #000;
+      background-color: var(--accent);
     }
 
     .negative {
+      color: #fff;
+      background-color: var(--accent-minus);
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-action {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+      width: auto;
+      margin: 0;
+    }
+
+    .btn-edit {
+      color: #4fc3f7;
+    }
+
+    .btn-delete {
       color: var(--accent-minus);
-      font-weight: bold;
+    }
+
+    .note-text {
+      font-size: 0.75rem;
+      color: var(--accent);
+      display: block;
+      margin-top: 2px;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1>Ore di Lavoro</h1>
+    <h1 id="mainTitle">Ore di Lavoro</h1>
 
     <div class="card">
       <form id="workForm">
+        <input type="hidden" id="editId">
+        
         <div class="form-group">
           <label for="date">Data</label>
           <input type="date" id="date" required>
         </div>
 
-        <div class="form-group">
-          <label for="startTime">Ora Inizio</label>
-          <input type="time" id="startTime" value="08:00" required>
+        <div class="row-inputs">
+          <div class="form-group">
+            <label for="startTime">Inizio Mattina</label>
+            <input type="time" id="startTime" value="08:00" required>
+          </div>
+          <div class="form-group">
+            <label for="endMorning">Fine Mattina</label>
+            <input type="time" id="endMorning" value="12:30" required>
+          </div>
+        </div>
+
+        <div class="row-inputs">
+          <div class="form-group">
+            <label for="startAfternoon">Inizio Pomeriggio</label>
+            <input type="time" id="startAfternoon" value="14:30" required>
+          </div>
+          <div class="form-group">
+            <label for="endTime">Fine Pomeriggio</label>
+            <input type="time" id="endTime" value="18:00" required>
+          </div>
         </div>
 
         <div class="form-group">
-          <label for="endTime">Ora Fine</label>
-          <input type="time" id="endTime" value="17:00" required>
+          <label for="note">Nota / Giustificativo Straordinario</label>
+          <textarea id="note" placeholder="Es. Lavoro extra prima o dopo turno..."></textarea>
         </div>
 
-        <div class="form-group">
-          <label for="breakMinutes">Pausa (minuti)</label>
-          <input type="number" id="breakMinutes" value="60" min="0" step="5">
-        </div>
-
-        <button type="submit">Salva Giornata</button>
+        <button type="submit" id="submitBtn">Salva Giornata</button>
+        <button type="button" id="cancelBtn" class="btn-cancel" onclick="resetForm()">Annulla Modifica</button>
       </form>
     </div>
 
@@ -150,9 +235,10 @@
       <table>
         <thead>
           <tr>
-            <th>Data</th>
-            <th>Lavorate</th>
-            <th>Straordinario</th>
+            <th>Data / Orari / Nota</th>
+            <th>Tot.</th>
+            <th>Straord.</th>
+            <th>Azioni</th>
           </tr>
         </thead>
         <tbody id="logTableBody">
@@ -163,13 +249,12 @@
   </div>
 
   <script>
-    // 8 ore standard giornaliere = 480 minuti
-    const DAILY_STANDARD_MINUTES = 8 * 60;
+    const DAILY_STANDARD_MINUTES = 8 * 60; // 8 ore standard
 
-    // Imposta la data di oggi come default nel campo data
     document.getElementById('date').valueAsDate = new Date();
 
     function timeToMinutes(timeStr) {
+      if (!timeStr) return 0;
       const [hours, minutes] = timeStr.split(':').map(Number);
       return hours * 60 + minutes;
     }
@@ -187,56 +272,153 @@
       return `${sign}${hours}:${minutes}`;
     }
 
+    function formatDateIT(dateStr) {
+      if (!dateStr) return '';
+      const [year, month, day] = dateStr.split('-');
+      return `${day}/${month}/${year}`;
+    }
+
     function loadLogs() {
       const logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
       const tbody = document.getElementById('logTableBody');
       tbody.innerHTML = '';
 
-      logs.reverse().forEach(entry => {
+      if (logs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--subtext);">Nessun inserimento</td></tr>`;
+        return;
+      }
+
+      logs.slice().reverse().forEach((entry) => {
         const tr = document.createElement('tr');
         const overtimeClass = entry.overtimeMinutes >= 0 ? 'positive' : 'negative';
+        const formattedDate = formatDateIT(entry.date);
         
         tr.innerHTML = `
-          <td>${entry.date}</td>
+          <td>
+            <strong>${formattedDate}</strong><br>
+            <span class="time-badge">🕒 ${entry.startM}-${entry.endM} | ${entry.startA}-${entry.endA}</span>
+            ${entry.note ? `<span class="note-text">📝 ${entry.note}</span>` : ''}
+          </td>
           <td>${entry.workedFormatted}</td>
-          <td class="${overtimeClass}">${entry.overtimeFormatted}</td>
+          <td><span class="extra-hours ${overtimeClass}">${entry.overtimeFormatted}</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-action btn-edit" onclick="editEntry(${entry.id})" title="Modifica">✏️</button>
+              <button class="btn-action btn-delete" onclick="deleteEntry(${entry.id})" title="Elimina">✕</button>
+            </div>
+          </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
+    window.deleteEntry = function(id) {
+      if (confirm("Vuoi davvero eliminare questo inserimento?")) {
+        let logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+        logs = logs.filter(entry => entry.id !== id);
+        localStorage.setItem('work_logs', JSON.stringify(logs));
+        loadLogs();
+        resetForm();
+      }
+    };
+
+    window.editEntry = function(id) {
+      const logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+      const entry = logs.find(item => item.id === id);
+      if (!entry) return;
+
+      document.getElementById('editId').value = entry.id;
+      document.getElementById('date').value = entry.date;
+      document.getElementById('startTime').value = entry.startM;
+      document.getElementById('endMorning').value = entry.endM;
+      document.getElementById('startAfternoon').value = entry.startA;
+      document.getElementById('endTime').value = entry.endA;
+      document.getElementById('note').value = entry.note || '';
+
+      document.getElementById('submitBtn').textContent = "Aggiorna Giornata";
+      document.getElementById('cancelBtn').style.display = "block";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.resetForm = function() {
+      document.getElementById('editId').value = '';
+      document.getElementById('workForm').reset();
+      document.getElementById('date').valueAsDate = new Date();
+      document.getElementById('startTime').value = "08:00";
+      document.getElementById('endMorning').value = "12:30";
+      document.getElementById('startAfternoon').value = "14:30";
+      document.getElementById('endTime').value = "18:00";
+      document.getElementById('submitBtn').textContent = "Salva Giornata";
+      document.getElementById('cancelBtn').style.display = "none";
+    };
+
     document.getElementById('workForm').addEventListener('submit', function (e) {
       e.preventDefault();
 
+      const editId = document.getElementById('editId').value;
       const date = document.getElementById('date').value;
-      const startMins = timeToMinutes(document.getElementById('startTime').value);
-      const endMins = timeToMinutes(document.getElementById('endTime').value);
-      const breakMins = parseInt(document.getElementById('breakMinutes').value, 10) || 0;
+      const startMStr = document.getElementById('startTime').value;
+      const endMStr = document.getElementById('endMorning').value;
+      const startAStr = document.getElementById('startAfternoon').value;
+      const endAStr = document.getElementById('endTime').value;
+      const note = document.getElementById('note').value.trim();
 
-      let workedMinutes = endMins - startMins - breakMins;
-      if (workedMinutes < 0) workedMinutes = 0;
+      const startM = timeToMinutes(startMStr);
+      const endM = timeToMinutes(endMStr);
+      const startA = timeToMinutes(startAStr);
+      const endA = timeToMinutes(endAStr);
+
+      const morningMinutes = endM - startM;
+      const afternoonMinutes = endA - startA;
+      let workedMinutes = (morningMinutes > 0 ? morningMinutes : 0) + (afternoonMinutes > 0 ? afternoonMinutes : 0);
 
       const overtimeMinutes = workedMinutes - DAILY_STANDARD_MINUTES;
 
-      const entry = {
-        id: Date.now(),
-        date: date,
-        workedFormatted: formatMinutes(workedMinutes),
-        overtimeFormatted: formatMinutes(overtimeMinutes, true),
-        overtimeMinutes: overtimeMinutes
-      };
+      let logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
 
-      const currentData = JSON.parse(localStorage.getItem('work_logs') || '[]');
-      currentData.push(entry);
-      localStorage.setItem('work_logs', JSON.stringify(currentData));
+      if (editId) {
+        // Modifica elemento esistente
+        logs = logs.map(entry => {
+          if (entry.id == editId) {
+            return {
+              ...entry,
+              date,
+              startM: startMStr,
+              endM: endMStr,
+              startA: startAStr,
+              endA: endAStr,
+              workedFormatted: formatMinutes(workedMinutes),
+              overtimeFormatted: formatMinutes(overtimeMinutes, true),
+              overtimeMinutes,
+              note
+            };
+          }
+          return entry;
+        });
+      } else {
+        // Aggiungi nuovo elemento
+        const entry = {
+          id: Date.now(),
+          date,
+          startM: startMStr,
+          endM: endMStr,
+          startA: startAStr,
+          endA: endAStr,
+          workedFormatted: formatMinutes(workedMinutes),
+          overtimeFormatted: formatMinutes(overtimeMinutes, true),
+          overtimeMinutes,
+          note
+        };
+        logs.push(entry);
+      }
 
+      localStorage.setItem('work_logs', JSON.stringify(logs));
+      resetForm();
       loadLogs();
     });
 
-    // Carica lo storico al primo avvio
     loadLogs();
 
-    // Registrazione Service Worker per PWA
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
