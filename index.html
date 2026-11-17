@@ -9,9 +9,9 @@
     :root {
       --bg-color: #121212;
       --card-bg: #1e1e1e;
-      --accent-neon: #ccff00; /* Giallo fluo principale */
-      --accent-minus: #ff5252;
-      --accent-holiday: #ffea00;
+      --accent-neon: #ccff00;     /* Giallo fluo (Straordinari / Tema) */
+      --accent-minus: #ff007f;    /* Fucsia fluo (Permessi / Ore in meno) */
+      --accent-holiday: #ff9900;  /* Arancione fluo (Ferie) */
       --text: #ffffff;
       --subtext: #a0a0a0;
       --border: #333333;
@@ -156,7 +156,7 @@
     }
 
     .summary-value {
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: bold;
     }
 
@@ -314,10 +314,10 @@
         </select>
       </div>
 
-      <!-- Box Riepiloghi Mese -->
+      <!-- Box Riepiloghi Mese con colori fluo -->
       <div class="summary-box">
         <span class="summary-title">Totale Straordinario Mese:</span>
-        <span id="monthlyTotal" class="summary-value">+00:00</span>
+        <span id="monthlyTotal" class="summary-value" style="color: var(--accent-neon);">+00:00</span>
       </div>
 
       <div class="summary-box">
@@ -767,7 +767,6 @@
           for (let i = 0; i < lines.length; i++) {
             let line = lines[i].trim();
             if (!line || line.startsWith("Data;") || line.startsWith("TOTALE PERIODO") || line.startsWith("\uFEFFDATA")) continue;
-            // Rimuove eventuale BOM iniziale se presente
             line = line.replace(/^\uFEFF/, "");
 
             const cols = line.split(';');
@@ -838,7 +837,7 @@
             loadLogs();
             alert("CSV importato con successo!");
           } else {
-            alert("Nessun record valido trovato nel file CSV. Assicurati che sia il file generato da questa app.");
+            alert("Nessun record valido trovato nel file CSV.");
           }
         } catch (err) {
           alert("Errore durante l'elaborazione del file CSV.");
