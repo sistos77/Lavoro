@@ -3,735 +3,919 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Budget Familiare Fluo</title>
-  
-  <link rel="icon" type="image/jpeg" href="icon.jpg">
-  <link rel="apple-touch-icon" href="icon.jpg">
-  <meta name="theme-color" content="#0b0f19">
+  <title>Gestione Ore di Lavoro</title>
   <link rel="manifest" href="manifest.json">
-
-  <!-- Tailwind CSS & Chart.js -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --accent-neon: #ccff00; /* Giallo fluo principale */
+      --accent-minus: #ff5252;
+      --accent-holiday: #ffea00;
+      --text: #ffffff;
+      --subtext: #a0a0a0;
+      --border: #333333;
+    }
+
     body {
-      background-color: #0b0f19;
-      color: #e2e8f0;
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text);
+      margin: 0;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .neon-border-pink {
-      border: 1px solid #ff007f;
-      box-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
+
+    .container {
+      width: 100%;
+      max-width: 480px;
     }
-    .neon-border-purp-or {
-      border: 1px solid #bf00ff;
-      box-shadow: 0 0 10px rgba(191, 0, 255, 0.4);
-      background: linear-gradient(135deg, rgba(191, 0, 255, 0.1) 0%, rgba(255, 102, 0, 0.1) 100%);
+
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: var(--accent-neon);
     }
-    .neon-text-orange {
-      color: #ff6600;
-      text-shadow: 0 0 5px rgba(255, 102, 0, 0.5);
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      margin-bottom: 20px;
     }
-    .neon-text-title {
-      background: linear-gradient(135deg, #ff007f 0%, #bf00ff 50%, #ff6600 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 6px rgba(191, 0, 255, 0.5));
+
+    .form-group {
+      margin-bottom: 12px;
     }
-    .bg-dark-card {
-      background-color: #111827;
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      color: var(--subtext);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background-color: #2a2a2a;
+      color: #fff;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      resize: vertical;
+      height: 60px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      background: #252525;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .checkbox-group input {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--accent-neon);
+      cursor: pointer;
+    }
+
+    .checkbox-group label {
+      margin: 0;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .row-inputs {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row-inputs .form-group {
+      flex: 1;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background-color: var(--accent-neon);
+      color: #000;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:active {
+      opacity: 0.8;
+    }
+
+    .btn-cancel {
+      background-color: #444;
+      color: #fff;
+      display: none;
+      margin-top: 6px;
+    }
+
+    .btn-action-custom {
+      background-color: var(--accent-neon);
+      color: #000;
+    }
+
+    /* Box riepilogo mensile */
+    .summary-box {
+      background: #252525;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--border);
+    }
+
+    .summary-title {
+      font-size: 0.85rem;
+      color: var(--subtext);
+    }
+
+    .summary-value {
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+
+    .filter-container {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      padding: 10px 6px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+
+    th {
+      color: var(--subtext);
+    }
+
+    .time-badge {
+      font-family: monospace;
+      color: var(--subtext);
+      font-size: 0.75rem;
+      background: #252525;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 2px;
+    }
+
+    .extra-hours {
+      font-weight: bold;
+      padding: 4px 6px;
+      border-radius: 6px;
+      display: inline-block;
+      font-size: 0.75rem;
+    }
+
+    .positive {
+      color: #000;
+      background-color: var(--accent-neon);
+    }
+
+    .negative {
+      color: #fff;
+      background-color: var(--accent-minus);
+    }
+
+    .holiday-badge {
+      color: #000;
+      background-color: var(--accent-holiday);
+      font-weight: bold;
+      padding: 4px 6px;
+      border-radius: 6px;
+      display: inline-block;
+      font-size: 0.75rem;
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-action {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+      width: auto;
+      margin: 0;
+    }
+
+    .btn-edit {
+      color: #4fc3f7;
+    }
+
+    .btn-delete {
+      color: var(--accent-minus);
+    }
+
+    .note-text {
+      font-size: 0.75rem;
+      color: var(--accent-neon);
+      display: block;
+      margin-top: 2px;
     }
   </style>
 </head>
-<body class="min-h-screen pb-12">
+<body>
 
-  <!-- PIN Screen -->
-  <div id="pinScreen" class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-dark-card p-6 rounded-2xl neon-border-purp-or text-center max-w-xs w-full">
-      <h2 class="text-xl font-bold mb-4 text-[#bf00ff]">Inserisci PIN</h2>
-      <input type="password" id="pinInput" maxlength="4" class="w-full text-center text-3xl tracking-widest bg-gray-900 border border-gray-700 rounded-lg p-3 text-[#39ff14] mb-4 focus:outline-none focus:border-[#bf00ff]">
-      <button onclick="checkPin()" class="w-full bg-[#bf00ff] text-white font-bold py-3 rounded-lg hover:bg-purple-600 transition shadow-[0_0_10px_rgba(191,0,255,0.4)]">SBLOCCA</button>
+  <div class="container">
+    <h1 id="mainTitle">Ore di Lavoro</h1>
+
+    <div class="card">
+      <form id="workForm">
+        <input type="hidden" id="editId">
+        
+        <div class="form-group">
+          <label for="date">Data</label>
+          <input type="date" id="date" required>
+        </div>
+
+        <div class="row-inputs">
+          <div class="form-group">
+            <label for="startTime">Inizio Mattina</label>
+            <input type="time" id="startTime" value="08:00" required>
+          </div>
+          <div class="form-group">
+            <label for="endMorning">Fine Mattina</label>
+            <input type="time" id="endMorning" value="12:30" required>
+          </div>
+        </div>
+
+        <div class="row-inputs">
+          <div class="form-group">
+            <label for="startAfternoon">Inizio Pomeriggio</label>
+            <input type="time" id="startAfternoon" value="14:30" required>
+          </div>
+          <div class="form-group">
+            <label for="endTime">Fine Pomeriggio</label>
+            <input type="time" id="endTime" value="18:00" required>
+          </div>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="isHoliday">
+          <label for="isHoliday">Segna come Giornata di Ferie 🌴</label>
+        </div>
+
+        <div class="form-group" style="margin-top: 12px;">
+          <label for="note">Nota / Giustificativo</label>
+          <textarea id="note" placeholder="Es. Lavoro extra o motivazione ferie/permesso..."></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn">Salva Giornata</button>
+        <button type="button" id="cancelBtn" class="btn-cancel" onclick="resetForm()">Annulla Modifica</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Registro & Riepilogo</h2>
+      
+      <!-- Filtro Mese -->
+      <div class="filter-container">
+        <select id="monthFilter" onchange="loadLogs()">
+          <!-- Popolato dinamicamente via JS -->
+        </select>
+      </div>
+
+      <!-- Box Riepiloghi Mese -->
+      <div class="summary-box">
+        <span class="summary-title">Totale Straordinario Mese:</span>
+        <span id="monthlyTotal" class="summary-value">+00:00</span>
+      </div>
+
+      <div class="summary-box">
+        <span class="summary-title">Totale Permessi (Ore in meno):</span>
+        <span id="monthlyPermission" class="summary-value" style="color: var(--accent-minus);">00:00</span>
+      </div>
+
+      <div class="summary-box">
+        <span class="summary-title">Totale Ferie Mese:</span>
+        <span id="monthlyHoliday" class="summary-value" style="color: var(--accent-holiday);">0 giorni</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Data / Orari / Nota</th>
+            <th>Tot.</th>
+            <th>Stato / Straord.</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
+        <tbody id="logTableBody">
+          <!-- I dati salvati compariranno qui -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Card Esportazione -->
+    <div class="card">
+      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Esporta Dati</h2>
+      <div class="row-inputs">
+        <div class="form-group">
+          <label for="exportStart">Dal giorno</label>
+          <input type="date" id="exportStart">
+        </div>
+        <div class="form-group">
+          <label for="exportEnd">Al giorno</label>
+          <input type="date" id="exportEnd">
+        </div>
+      </div>
+      <button type="button" class="btn-action-custom" onclick="exportToExcel()">Scarica File Excel (.csv)</button>
+      <button type="button" class="btn-action-custom" onclick="exportToWhatsApp()">Invia su WhatsApp 💬</button>
+    </div>
+
+    <!-- Card Backup e Ripristino -->
+    <div class="card">
+      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Backup & Ripristino</h2>
+      <p style="font-size: 0.8rem; color: var(--subtext); margin-top: 0;">Salva o ripristina i dati tramite file JSON o il tuo vecchio file CSV.</p>
+      
+      <button type="button" class="btn-action-custom" onclick="exportBackupJSON()">Scarica Backup (JSON) 💾</button>
+      
+      <div style="margin-top: 12px;">
+        <label for="importFile" style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--subtext);">Ripristina da file JSON</label>
+        <input type="file" id="importFile" accept=".json" onchange="importBackupJSON(event)" style="padding: 6px; font-size: 0.85rem;">
+      </div>
+
+      <div style="margin-top: 14px;">
+        <label for="importCsvFile" style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--subtext);">Importa da vecchio file CSV (Excel)</label>
+        <input type="file" id="importCsvFile" accept=".csv" onchange="importCSV(event)" style="padding: 6px; font-size: 0.85rem;">
+      </div>
     </div>
   </div>
 
-  <!-- Header Nav -->
-  <nav class="border-b border-gray-800 bg-[#0d1322] px-4 py-3 sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto flex justify-between items-center">
-      <div class="flex items-center space-x-2">
-        <img src="icon.jpg" alt="Logo" class="w-7 h-7 rounded-lg neon-border-pink object-cover" onerror="this.style.display='none'">
-        <h1 class="text-base sm:text-lg font-extrabold tracking-wider neon-text-title uppercase">Budget Familiare</h1>
-      </div>
-      <div class="flex space-x-2">
-        <button id="btnTabDashboard" onclick="switchTab('dashboard')" class="px-3 py-1.5 text-xs sm:text-sm rounded-lg font-semibold bg-[#ff007f] text-white shadow-[0_0_10px_rgba(255,0,127,0.5)]">Dashboard</button>
-        <button id="btnTabSettings" onclick="switchTab('settings')" class="px-3 py-1.5 text-xs sm:text-sm rounded-lg font-semibold bg-gray-800 text-gray-300 hover:text-white border border-gray-700">Impostazioni</button>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Main Content -->
-  <main class="max-w-6xl mx-auto p-4 space-y-6">
-    <div id="tabDashboard" class="space-y-6">
-      
-      <!-- Sezione Filtro Data -->
-      <div class="bg-dark-card p-4 rounded-2xl border border-gray-800 space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Filtra Periodo:</span>
-          <button onclick="resetDateFilter()" class="text-xs text-[#ccff00] hover:underline font-semibold">Mostra tutto</button>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div class="flex items-center space-x-2 bg-gray-900 border border-gray-700 rounded-lg p-2">
-            <span class="text-xs text-gray-400 w-8">Dal</span>
-            <input type="date" id="filterFrom" onchange="renderDashboard()" class="bg-transparent text-xs text-white focus:outline-none w-full">
-          </div>
-          <div class="flex items-center space-x-2 bg-gray-900 border border-gray-700 rounded-lg p-2">
-            <span class="text-xs text-gray-400 w-8">Al</span>
-            <input type="date" id="filterTo" onchange="renderDashboard()" class="bg-transparent text-xs text-white focus:outline-none w-full">
-          </div>
-        </div>
-      </div>
-
-      <!-- Cards Totali -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-dark-card p-5 rounded-2xl border border-[#39ff14] flex flex-col justify-between shadow-[0_0_10px_rgba(57,255,20,0.2)]">
-          <span class="text-gray-400 text-sm font-medium">Entrate Periodo</span>
-          <span id="txtEntrate" class="text-3xl font-bold text-[#39ff14] mt-2">€ 0.00</span>
-        </div>
-        <div class="bg-dark-card p-5 rounded-2xl neon-border-pink flex flex-col justify-between">
-          <span class="text-gray-400 text-sm font-medium">Uscite Periodo</span>
-          <span id="txtUscite" class="text-3xl font-bold text-[#ff007f] mt-2">€ 0.00</span>
-        </div>
-        <div class="bg-dark-card p-5 rounded-2xl border border-[#ff6600] flex flex-col justify-between shadow-[0_0_10px_rgba(255,102,0,0.2)]">
-          <span class="text-gray-400 text-sm font-medium">Bilancio Netto</span>
-          <span id="txtSaldo" class="text-3xl font-bold neon-text-orange mt-2">€ 0.00</span>
-        </div>
-      </div>
-
-      <!-- Form Movimenti & Grafico -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div id="formContainer" class="bg-dark-card p-5 rounded-2xl border border-[#ccff00] lg:col-span-1 shadow-[0_0_10px_rgba(204,255,0,0.2)] transition-all">
-          <div class="flex justify-between items-center mb-4">
-            <h3 id="formTitle" class="text-lg font-bold text-[#ccff00]">Nuovo Movimento</h3>
-            <button type="button" id="btnCancelEdit" onclick="cancelEdit()" class="hidden text-xs text-gray-400 hover:text-white underline">Annulla</button>
-          </div>
-          <form id="txForm" onsubmit="saveTransaction(event)" class="space-y-4">
-            <input type="hidden" id="editTxId" value="">
-            <div>
-              <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Tipo</label>
-              <select id="txType" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:border-[#ccff00]">
-                <option value="uscita">Uscita</option>
-                <option value="entrata">Entrata</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Importo (€)</label>
-              <input type="number" step="0.01" id="txAmount" required class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:border-[#ccff00]">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Categoria</label>
-              <select id="txCategory" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:border-[#ccff00]"></select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Data</label>
-              <input type="date" id="txDate" required class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:border-[#ccff00]">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-400 uppercase mb-1">Note (facoltativo)</label>
-              <input type="text" id="txNote" placeholder="es. Spesa settimanale" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:border-[#ccff00]">
-            </div>
-            <button type="submit" id="btnSubmitTx" class="w-full bg-[#ccff00] text-black font-bold py-3 rounded-lg hover:bg-yellow-300 shadow-[0_0_10px_rgba(204,255,0,0.4)] transition">AGGIUNGI MOVIMENTO</button>
-          </form>
-        </div>
-
-        <div class="bg-dark-card p-5 rounded-2xl neon-border-purp-or lg:col-span-2 flex flex-col justify-between">
-          <h3 class="text-lg font-bold mb-4 text-[#bf00ff]">Ripartizione Spese per Categoria</h3>
-          <div class="relative h-64 sm:h-72 w-full flex items-center justify-center">
-            <canvas id="chartCategory"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabella Transazioni con Ricerca e Riepilogo -->
-      <div class="bg-dark-card p-5 rounded-2xl border border-gray-800 space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <h3 class="text-lg font-bold text-gray-200">Storico Transazioni</h3>
-          <div class="relative w-full sm:w-72">
-            <input 
-              type="text" 
-              id="searchTxInput" 
-              oninput="renderDashboard()" 
-              placeholder="Cerca per nota, categoria, importo..." 
-              class="w-full bg-gray-900 border border-gray-700 rounded-lg pl-3 pr-8 py-2 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-[#bf00ff] transition"
-            >
-            <button 
-              type="button" 
-              id="btnClearSearch" 
-              onclick="clearSearch()" 
-              class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#ff007f] text-sm font-bold"
-              title="Cancella ricerca"
-            >&times;</button>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-gray-900 text-gray-400 uppercase text-xs border-b border-gray-800">
-              <tr>
-                <th class="p-3">Data</th>
-                <th class="p-3">Categoria</th>
-                <th class="p-3 text-right">Importo</th>
-                <th class="p-3">Note</th>
-                <th class="p-3 text-center">Azioni</th>
-              </tr>
-            </thead>
-            <tbody id="txTableBody" class="divide-y divide-gray-800"></tbody>
-            <tfoot id="txTableFoot" class="bg-gray-900/90 border-t-2 border-gray-700 hidden">
-              <tr>
-                <td colspan="2" id="txFilteredCount" class="p-3 text-xs sm:text-sm font-bold uppercase tracking-wider text-gray-300">
-                  Totale Filtrato
-                </td>
-                <td id="txFilteredTotal" class="p-3 text-right font-extrabold text-sm sm:text-base whitespace-nowrap">
-                  € 0.00
-                </td>
-                <td colspan="2" class="p-3"></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Impostazioni -->
-    <div id="tabSettings" class="space-y-6 hidden">
-      <div class="bg-dark-card p-5 rounded-2xl neon-border-pink">
-        <h3 class="text-lg font-bold mb-4 text-[#ff007f]">Gestione Categorie Custom</h3>
-        <div class="flex flex-col sm:flex-row gap-2 mb-4">
-          <input type="text" id="newCatInput" placeholder="Es. Palestra, Animali..." class="flex-1 bg-gray-900 border border-gray-700 rounded-lg p-2.5 text-white focus:border-[#ff007f] min-w-0">
-          <button onclick="addCategory()" class="bg-[#ff007f] text-white font-bold px-5 py-2.5 rounded-lg hover:bg-pink-600 shrink-0">Aggiungi</button>
-        </div>
-        <div id="categoriesList" class="flex flex-wrap gap-2"></div>
-      </div>
-
-      <div class="bg-dark-card p-5 rounded-2xl border border-gray-800 space-y-4">
-        <h3 class="text-lg font-bold text-gray-200">Gestione Dati & Backup</h3>
-        <div class="flex flex-wrap gap-3">
-          <button onclick="exportJSON()" class="bg-gray-800 border border-purple-500 text-[#bf00ff] font-semibold px-4 py-2 rounded-lg hover:bg-gray-700">Esporta JSON (Backup)</button>
-          
-          <button onclick="document.getElementById('importJsonInput').click()" class="bg-gray-800 border border-orange-500 text-[#ff6600] font-semibold px-4 py-2 rounded-lg hover:bg-gray-700">Importa JSON (Ripristina)</button>
-          <input type="file" id="importJsonInput" accept=".json,application/json" onchange="importJSON(event)" class="hidden">
-
-          <button onclick="exportCSV()" class="bg-gray-800 border border-green-500 text-[#39ff14] font-semibold px-4 py-2 rounded-lg hover:bg-gray-700">Esporta CSV (Excel)</button>
-          <button onclick="resetCategories()" class="bg-gray-800 border border-yellow-500 text-[#ccff00] font-semibold px-4 py-2 rounded-lg hover:bg-gray-700">Ripristina Categorie Default</button>
-        </div>
-
-        <div class="pt-4 border-t border-gray-800">
-          <h4 class="text-sm font-semibold text-red-400 mb-2">Zona Pericolosa</h4>
-          <button onclick="clearAllData()" class="bg-red-950 border border-red-600 text-red-400 font-bold px-4 py-2 rounded-lg hover:bg-red-900 transition">
-            Cancella Tutti i Dati
-          </button>
-        </div>
-      </div>
-    </div>
-  </main>
-
   <script>
-    const DEFAULT_CATEGORIES = ['Alimentari', 'Casa', 'Auto', 'Svago', 'Utenze', 'Istruzione', 'Spesa', 'Stipendio'];
+    const DAILY_STANDARD_MINUTES = 8 * 60; // 8 ore standard
 
-    let savedCategories = null;
-    try {
-      savedCategories = JSON.parse(localStorage.getItem('bg_categories'));
-    } catch (e) {
-      savedCategories = null;
+    const today = new Date();
+    document.getElementById('date').valueAsDate = today;
+
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    function toInputDateStr(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     }
 
-    if (!savedCategories || !Array.isArray(savedCategories) || savedCategories.length === 0) {
-      savedCategories = [...DEFAULT_CATEGORIES];
-      try { localStorage.setItem('bg_categories', JSON.stringify(savedCategories)); } catch(e) {}
+    document.getElementById('exportStart').value = toInputDateStr(firstDayOfMonth);
+    document.getElementById('exportEnd').value = toInputDateStr(lastDayOfMonth);
+
+    function timeToMinutes(timeStr) {
+      if (!timeStr) return 0;
+      const [hours, minutes] = timeStr.split(':').map(Number);
+      return hours * 60 + minutes;
     }
 
-    let savedTransactions = [];
-    try {
-      savedTransactions = JSON.parse(localStorage.getItem('bg_transactions')) || [];
-    } catch (e) {
-      savedTransactions = [];
+    function formatMinutes(totalMinutes, showSign = false) {
+      const isNegative = totalMinutes < 0;
+      const absMinutes = Math.abs(totalMinutes);
+      const hours = String(Math.floor(absMinutes / 60)).padStart(2, '0');
+      const minutes = String(absMinutes % 60).padStart(2, '0');
+      
+      let sign = "";
+      if (showSign) {
+        sign = isNegative ? "-" : "+";
+      }
+      return `${sign}${hours}:${minutes}`;
     }
 
-    let state = {
-      transactions: savedTransactions,
-      categories: savedCategories,
-      pin: localStorage.getItem('bg_pin') || null
+    function formatDateIT(dateStr) {
+      if (!dateStr) return '';
+      const [year, month, day] = dateStr.split('-');
+      return `${day}/${month}/${year}`;
+    }
+
+    function updateMonthFilter(logs) {
+      const filterSelect = document.getElementById('monthFilter');
+      const currentVal = filterSelect.value;
+      
+      const monthsSet = new Set();
+      logs.forEach(entry => {
+        if (entry.date) {
+          monthsSet.add(entry.date.substring(0, 7));
+        }
+      });
+
+      const currentMonthStr = new Date().toISOString().substring(0, 7);
+      monthsSet.add(currentMonthStr);
+
+      const sortedMonths = Array.from(monthsSet).sort().reverse();
+
+      filterSelect.innerHTML = '';
+      sortedMonths.forEach(mStr => {
+        const [year, month] = mStr.split('-');
+        const dateObj = new Date(year, month - 1, 1);
+        const monthName = dateObj.toLocaleString('it-IT', { month: 'long', year: 'numeric' });
+        
+        const option = document.createElement('option');
+        option.value = mStr;
+        option.textContent = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+        filterSelect.appendChild(option);
+      });
+
+      if (currentVal && sortedMonths.includes(currentVal)) {
+        filterSelect.value = currentVal;
+      } else {
+        filterSelect.value = currentMonthStr;
+      }
+    }
+
+    function loadLogs() {
+      const logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+      updateMonthFilter(logs);
+
+      const selectedMonth = document.getElementById('monthFilter').value;
+      const tbody = document.getElementById('logTableBody');
+      tbody.innerHTML = '';
+
+      const filteredLogs = logs.filter(entry => entry.date && entry.date.startsWith(selectedMonth));
+
+      let totalMonthOvertime = 0;
+      let totalMonthPermission = 0;
+      let totalMonthHolidays = 0;
+
+      filteredLogs.forEach(entry => {
+        if (entry.isHoliday) {
+          totalMonthHolidays += 1;
+        } else {
+          if (entry.overtimeMinutes >= 0) {
+            totalMonthOvertime += entry.overtimeMinutes;
+          } else {
+            totalMonthPermission += Math.abs(entry.overtimeMinutes);
+          }
+        }
+      });
+
+      const monthlyTotalEl = document.getElementById('monthlyTotal');
+      monthlyTotalEl.textContent = formatMinutes(totalMonthOvertime, true);
+      
+      const monthlyPermissionEl = document.getElementById('monthlyPermission');
+      monthlyPermissionEl.textContent = formatMinutes(totalMonthPermission);
+
+      const monthlyHolidayEl = document.getElementById('monthlyHoliday');
+      monthlyHolidayEl.textContent = `${totalMonthHolidays} ${totalMonthHolidays === 1 ? 'giorno' : 'giorni'}`;
+
+      if (filteredLogs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--subtext);">Nessun inserimento per questo mese</td></tr>`;
+        return;
+      }
+
+      filteredLogs.slice().reverse().forEach((entry) => {
+        const tr = document.createElement('tr');
+        const formattedDate = formatDateIT(entry.date);
+        
+        let statusBadge = "";
+        let workedDisplay = entry.workedFormatted;
+
+        if (entry.isHoliday) {
+          statusBadge = `<span class="holiday-badge">🌴 FERIE</span>`;
+          workedDisplay = "00:00 (Ferie)";
+        } else {
+          const overtimeClass = entry.overtimeMinutes >= 0 ? 'positive' : 'negative';
+          statusBadge = `<span class="extra-hours ${overtimeClass}">${entry.overtimeFormatted}</span>`;
+        }
+        
+        tr.innerHTML = `
+          <td>
+            <strong>${formattedDate}</strong><br>
+            ${!entry.isHoliday ? `<span class="time-badge">🕒 ${entry.startM}-${entry.endM} | ${entry.startA}-${entry.endTime}</span>` : ''}
+            ${entry.note ? `<span class="note-text">📝 ${entry.note}</span>` : ''}
+          </td>
+          <td>${workedDisplay}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-action btn-edit" onclick="editEntry(${entry.id})" title="Modifica">✏️</button>
+              <button class="btn-action btn-delete" onclick="deleteEntry(${entry.id})" title="Elimina">✕</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.deleteEntry = function(id) {
+      if (confirm("Vuoi davvero eliminare questo inserimento?")) {
+        let logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+        logs = logs.filter(entry => entry.id !== id);
+        localStorage.setItem('work_logs', JSON.stringify(logs));
+        loadLogs();
+        resetForm();
+      }
     };
 
-    let chartInstance = null;
+    window.editEntry = function(id) {
+      const logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+      const entry = logs.find(item => item.id === id);
+      if (!entry) return;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      try {
-        const txDate = document.getElementById('txDate');
-        if (txDate) txDate.valueAsDate = new Date();
-        if (state.pin) {
-          const pinScreen = document.getElementById('pinScreen');
-          if (pinScreen) pinScreen.classList.remove('hidden');
-        }
-        renderCategories();
-        renderDashboard();
-      } catch (err) {
-        console.error("Errore init:", err);
-      }
-    });
+      document.getElementById('editId').value = entry.id;
+      document.getElementById('date').value = entry.date;
+      document.getElementById('startTime').value = entry.startM || "08:00";
+      document.getElementById('endMorning').value = entry.endM || "12:30";
+      document.getElementById('startAfternoon').value = entry.startA || "14:30";
+      document.getElementById('endTime').value = entry.endTime || "18:00";
+      document.getElementById('isHoliday').checked = !!entry.isHoliday;
+      document.getElementById('note').value = entry.note || '';
 
-    function checkPin() {
-      const val = document.getElementById('pinInput').value;
-      if (val === state.pin) {
-        document.getElementById('pinScreen').classList.add('hidden');
-      } else {
-        alert('PIN errato!');
-      }
-    }
+      document.getElementById('submitBtn').textContent = "Aggiorna Giornata";
+      document.getElementById('cancelBtn').style.display = "block";
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
-    function switchTab(tab) {
-      const dashTab = document.getElementById('tabDashboard');
-      const settTab = document.getElementById('tabSettings');
-      const btnDash = document.getElementById('btnTabDashboard');
-      const btnSett = document.getElementById('btnTabSettings');
+    window.resetForm = function() {
+      document.getElementById('editId').value = '';
+      document.getElementById('workForm').reset();
+      document.getElementById('date').valueAsDate = new Date();
+      document.getElementById('startTime').value = "08:00";
+      document.getElementById('endMorning').value = "12:30";
+      document.getElementById('startAfternoon').value = "14:30";
+      document.getElementById('endTime').value = "18:00";
+      document.getElementById('isHoliday').checked = false;
+      document.getElementById('submitBtn').textContent = "Salva Giornata";
+      document.getElementById('cancelBtn').style.display = "none";
+    };
 
-      if (!dashTab || !settTab) return;
+    window.exportToExcel = function() {
+      const startDate = document.getElementById('exportStart').value;
+      const endDate = document.getElementById('exportEnd').value;
 
-      if (tab === 'dashboard') {
-        dashTab.classList.remove('hidden');
-        settTab.classList.add('hidden');
-        if (btnDash) btnDash.className = "px-3 py-1.5 text-xs sm:text-sm rounded-lg font-semibold bg-[#ff007f] text-white shadow-[0_0_10px_rgba(255,0,127,0.5)]";
-        if (btnSett) btnSett.className = "px-3 py-1.5 text-xs sm:text-sm rounded-lg font-semibold bg-gray-800 text-gray-300 hover:text-white border border-gray-700";
-        renderDashboard();
-      } else {
-        dashTab.classList.add('hidden');
-        settTab.classList.remove('hidden');
-        if (btnSett) btnSett.className = "px-3 py-1.5 text-xs sm:text-sm rounded-lg font-semibold bg-[#ff007f] text-white shadow-[0_0_10px_rgba(255,0,127,0.5)]";
-        if (btnDash) btnDash.className = "px-3 py-1.5 text-xs sm:text-sm rounded-lg font-semibold bg-gray-800 text-gray-300 hover:text-white border border-gray-700";
-      }
-    }
-
-    function renderCategories() {
-      const select = document.getElementById('txCategory');
-      const list = document.getElementById('categoriesList');
-      if (!select || !list) return;
-      select.innerHTML = '';
-      list.innerHTML = '';
-
-      state.categories.forEach(cat => {
-        select.innerHTML += `<option value="${cat}">${cat}</option>`;
-        list.innerHTML += `
-          <span class="bg-gray-900 border border-gray-700 text-gray-300 px-3 py-1.5 rounded-lg text-sm flex items-center space-x-2">
-            <span>${cat}</span>
-            <button onclick="removeCategory('${cat}')" class="text-red-500 hover:text-red-400 font-bold ml-1">&times;</button>
-          </span>`;
-      });
-      try { localStorage.setItem('bg_categories', JSON.stringify(state.categories)); } catch(e) {}
-    }
-
-    function addCategory() {
-      const input = document.getElementById('newCatInput');
-      if (!input) return;
-      const val = input.value.trim();
-      if (val && !state.categories.includes(val)) {
-        state.categories.push(val);
-        input.value = '';
-        renderCategories();
-      }
-    }
-
-    function removeCategory(cat) {
-      state.categories = state.categories.filter(c => c !== cat);
-      renderCategories();
-    }
-
-    function resetCategories() {
-      if (confirm("Vuoi ripristinare le categorie predefinite?")) {
-        state.categories = [...DEFAULT_CATEGORIES];
-        renderCategories();
-      }
-    }
-
-    function saveTransaction(e) {
-      e.preventDefault();
-      const editId = document.getElementById('editTxId').value;
-      const type = document.getElementById('txType').value;
-      const amount = parseFloat(document.getElementById('txAmount').value);
-      const category = document.getElementById('txCategory').value;
-      const date = document.getElementById('txDate').value;
-      const note = document.getElementById('txNote').value.trim();
-
-      if (editId) {
-        const index = state.transactions.findIndex(t => t.id == editId);
-        if (index !== -1) {
-          state.transactions[index] = {
-            id: Number(editId),
-            type,
-            amount,
-            category,
-            date,
-            note
-          };
-        }
-        cancelEdit();
-      } else {
-        const newTx = {
-          id: Date.now(),
-          type,
-          amount,
-          category,
-          date,
-          note
-        };
-        state.transactions.unshift(newTx);
-        document.getElementById('txAmount').value = '';
-        document.getElementById('txNote').value = '';
+      if (!startDate || !endDate) {
+        alert("Seleziona sia la data di inizio che la data di fine.");
+        return;
       }
 
-      state.transactions.sort((a, b) => {
-        if (b.date !== a.date) {
-          return b.date.localeCompare(a.date);
-        }
-        return b.id - a.id;
-      });
-      
-      saveAndRender();
-    }
-
-    function editTx(id) {
-      const tx = state.transactions.find(t => t.id === id);
-      if (!tx) return;
-
-      document.getElementById('editTxId').value = tx.id;
-      document.getElementById('txType').value = tx.type;
-      document.getElementById('txAmount').value = tx.amount;
-      
-      const catSelect = document.getElementById('txCategory');
-      if (!Array.from(catSelect.options).some(opt => opt.value === tx.category)) {
-        catSelect.innerHTML += `<option value="${tx.category}">${tx.category}</option>`;
+      if (startDate > endDate) {
+        alert("La data di inizio non può essere successiva alla data di fine.");
+        return;
       }
-      catSelect.value = tx.category;
-      
-      document.getElementById('txDate').value = tx.date;
-      document.getElementById('txNote').value = tx.note || '';
 
-      const formContainer = document.getElementById('formContainer');
-      const formTitle = document.getElementById('formTitle');
-      const btnSubmit = document.getElementById('btnSubmitTx');
-      const btnCancel = document.getElementById('btnCancelEdit');
+      const logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+      const filtered = logs
+        .filter(entry => entry.date >= startDate && entry.date <= endDate)
+        .sort((a, b) => a.date.localeCompare(b.date));
 
-      formContainer.classList.remove('border-[#ccff00]', 'shadow-[0_0_10px_rgba(204,255,0,0.2)]');
-      formContainer.classList.add('border-[#ff6600]', 'shadow-[0_0_15px_rgba(255,102,0,0.4)]');
-      
-      formTitle.innerText = 'Modifica Movimento';
-      formTitle.className = 'text-lg font-bold text-[#ff6600]';
-      
-      btnSubmit.innerText = 'SALVA MODIFICHE';
-      btnSubmit.className = 'w-full bg-[#ff6600] text-white font-bold py-3 rounded-lg hover:bg-orange-500 shadow-[0_0_10px_rgba(255,102,0,0.4)] transition';
-      
-      btnCancel.classList.remove('hidden');
-
-      formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-
-    function cancelEdit() {
-      document.getElementById('editTxId').value = '';
-      document.getElementById('txAmount').value = '';
-      document.getElementById('txNote').value = '';
-      document.getElementById('txDate').valueAsDate = new Date();
-      document.getElementById('txType').value = 'uscita';
-
-      const formContainer = document.getElementById('formContainer');
-      const formTitle = document.getElementById('formTitle');
-      const btnSubmit = document.getElementById('btnSubmitTx');
-      const btnCancel = document.getElementById('btnCancelEdit');
-
-      formContainer.classList.remove('border-[#ff6600]', 'shadow-[0_0_15px_rgba(255,102,0,0.4)]');
-      formContainer.classList.add('border-[#ccff00]', 'shadow-[0_0_10px_rgba(204,255,0,0.2)]');
-      
-      formTitle.innerText = 'Nuovo Movimento';
-      formTitle.className = 'text-lg font-bold text-[#ccff00]';
-      
-      btnSubmit.innerText = 'AGGIUNGI MOVIMENTO';
-      btnSubmit.className = 'w-full bg-[#ccff00] text-black font-bold py-3 rounded-lg hover:bg-yellow-300 shadow-[0_0_10px_rgba(204,255,0,0.4)] transition';
-      
-      btnCancel.classList.add('hidden');
-    }
-
-    function deleteTx(id) {
-      if (confirm("Sei sicuro di voler eliminare questo movimento?")) {
-        if (document.getElementById('editTxId').value == id) {
-          cancelEdit();
-        }
-        state.transactions = state.transactions.filter(t => t.id !== id);
-        saveAndRender();
+      if (filtered.length === 0) {
+        alert("Nessun dato trovato nel periodo selezionato.");
+        return;
       }
-    }
 
-    function clearAllData() {
-      if (confirm("Sei sicuro di voler cancellare TUTTE le transazioni e ripristinare l'app? L'azione non è reversibile.")) {
-        try {
-          localStorage.removeItem('bg_transactions');
-          localStorage.removeItem('bg_categories');
-        } catch(e) {}
-        state.transactions = [];
-        state.categories = [...DEFAULT_CATEGORIES];
-        cancelEdit();
-        renderCategories();
-        renderDashboard();
-        alert("Tutti i dati sono stati cancellati con successo.");
-      }
-    }
+      let csvContent = "\uFEFF"; 
+      csvContent += "Data;Tipo;Inizio Mattina;Fine Mattina;Inizio Pomeriggio;Fine Pomeriggio;Ore Lavorate;Straordinario/Permesso;Note\n";
 
-    function resetDateFilter() {
-      const f = document.getElementById('filterFrom');
-      const t = document.getElementById('filterTo');
-      if (f) f.value = '';
-      if (t) t.value = '';
-      renderDashboard();
-    }
+      let totalWorkedMins = 0;
+      let totalOvertimeMins = 0;
+      let totalPermissionMins = 0;
+      let holidayCount = 0;
 
-    function clearSearch() {
-      const s = document.getElementById('searchTxInput');
-      if (s) s.value = '';
-      renderDashboard();
-    }
+      filtered.forEach(entry => {
+        const cleanNote = (entry.note || "").replace(/;/g, ",").replace(/\r?\n|\r/g, " ");
+        let tipo = "Lavoro";
+        let strVal = entry.overtimeFormatted;
 
-    function saveAndRender() {
-      state.transactions.sort((a, b) => {
-        if (b.date !== a.date) {
-          return b.date.localeCompare(a.date);
-        }
-        return b.id - a.id;
-      });
-
-      try {
-        localStorage.setItem('bg_transactions', JSON.stringify(state.transactions));
-      } catch(e) {}
-      renderDashboard();
-    }
-
-    function renderDashboard() {
-      const fromEl = document.getElementById('filterFrom');
-      const toEl = document.getElementById('filterTo');
-      const searchEl = document.getElementById('searchTxInput');
-      const clearSearchBtn = document.getElementById('btnClearSearch');
-
-      const fromVal = fromEl ? fromEl.value : '';
-      const toVal = toEl ? toEl.value : '';
-      const searchVal = searchEl ? searchEl.value.trim().toLowerCase() : '';
-
-      if (clearSearchBtn) {
-        if (searchVal.length > 0) {
-          clearSearchBtn.classList.remove('hidden');
+        if (entry.isHoliday) {
+          tipo = "Ferie";
+          holidayCount++;
+          strVal = "00:00";
         } else {
-          clearSearchBtn.classList.add('hidden');
-        }
-      }
-
-      state.transactions.sort((a, b) => {
-        if (b.date !== a.date) {
-          return b.date.localeCompare(a.date);
-        }
-        return b.id - a.id;
-      });
-
-      const periodTx = state.transactions.filter(t => {
-        if (fromVal && t.date < fromVal) return false;
-        if (toVal && t.date > toVal) return false;
-        return true;
-      });
-
-      let entrate = 0, uscite = 0;
-      const catTotals = {};
-
-      periodTx.forEach(t => {
-        if (t.type === 'entrata') {
-          entrate += t.amount;
-        } else {
-          uscite += t.amount;
-          catTotals[t.category] = (catTotals[t.category] || 0) + t.amount;
-        }
-      });
-
-      const txtEntrate = document.getElementById('txtEntrate');
-      const txtUscite = document.getElementById('txtUscite');
-      const txtSaldo = document.getElementById('txtSaldo');
-
-      if (txtEntrate) txtEntrate.innerText = `€ ${entrate.toFixed(2)}`;
-      if (txtUscite) txtUscite.innerText = `€ ${uscite.toFixed(2)}`;
-      if (txtSaldo) txtSaldo.innerText = `€ ${(entrate - uscite).toFixed(2)}`;
-
-      const tableTx = periodTx.filter(t => {
-        if (!searchVal) return true;
-        const matchCat = (t.category || '').toLowerCase().includes(searchVal);
-        const matchNote = (t.note || '').toLowerCase().includes(searchVal);
-        const matchDate = (t.date || '').includes(searchVal);
-        const matchAmount = t.amount.toFixed(2).includes(searchVal);
-        return matchCat || matchNote || matchDate || matchAmount;
-      });
-
-      const tbody = document.getElementById('txTableBody');
-      const tfoot = document.getElementById('txTableFoot');
-      const filteredCountEl = document.getElementById('txFilteredCount');
-      const filteredTotalEl = document.getElementById('txFilteredTotal');
-
-      if (tbody) {
-        tbody.innerHTML = '';
-        
-        if (tableTx.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Nessun movimento trovato</td></tr>`;
-          if (tfoot) tfoot.classList.add('hidden');
-        } else {
-          let filteredBalance = 0;
-
-          tableTx.forEach(t => {
-            const isEntrata = t.type === 'entrata';
-            filteredBalance += isEntrata ? t.amount : -t.amount;
-
-            tbody.innerHTML += `
-              <tr class="hover:bg-gray-900/50">
-                <td class="p-3 text-gray-400 whitespace-nowrap">${t.date}</td>
-                <td class="p-3 font-semibold text-gray-200">${t.category}</td>
-                <td class="p-3 text-right font-bold whitespace-nowrap ${isEntrata ? 'text-[#39ff14]' : 'text-[#ff007f]'}">
-                  ${isEntrata ? '+' : '-'} €${t.amount.toFixed(2)}
-                </td>
-                <td class="p-3 text-gray-400">${t.note || '-'}</td>
-                <td class="p-3 text-center whitespace-nowrap space-x-3">
-                  <button onclick="editTx(${t.id})" class="text-[#ff6600] hover:text-orange-400 font-medium">Modifica</button>
-                  <button onclick="deleteTx(${t.id})" class="text-red-500 hover:text-red-400 font-medium">Elimina</button>
-                </td>
-              </tr>`;
-          });
-
-          if (tfoot && filteredCountEl && filteredTotalEl) {
-            tfoot.classList.remove('hidden');
-            const labelMov = tableTx.length === 1 ? '1 movimento' : `${tableTx.length} movimenti`;
-            filteredCountEl.innerText = `Totale Filtrato (${labelMov})`;
-            
-            const sign = filteredBalance > 0 ? '+' : (filteredBalance < 0 ? '-' : '');
-            filteredTotalEl.innerText = `${sign} €${Math.abs(filteredBalance).toFixed(2)}`;
-            filteredTotalEl.className = `p-3 text-right font-extrabold text-sm sm:text-base whitespace-nowrap ${filteredBalance >= 0 ? 'text-[#39ff14]' : 'text-[#ff007f]'}`;
+          const [wH, wM] = entry.workedFormatted.split(':').map(Number);
+          totalWorkedMins += (wH * 60 + wM);
+          if (entry.overtimeMinutes >= 0) {
+            totalOvertimeMins += entry.overtimeMinutes;
+          } else {
+            totalPermissionMins += Math.abs(entry.overtimeMinutes);
           }
         }
+
+        csvContent += `${formatDateIT(entry.date)};${tipo};${entry.isHoliday ? '-' : entry.startM};${entry.isHoliday ? '-' : entry.endM};${entry.isHoliday ? '-' : entry.startA};${entry.isHoliday ? '-' : entry.endTime};${entry.isHoliday ? '00:00' : entry.workedFormatted};${strVal};"${cleanNote}"\n`;
+      });
+
+      csvContent += `\nTOTALE PERIODO;;;;;;${formatMinutes(totalWorkedMins)};Straord: ${formatMinutes(totalOvertimeMins, true)} / Permessi: ${formatMinutes(totalPermissionMins)};Ferie totali: ${holidayCount} giorni\n`;
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Ore_Lavoro_${formatDateIT(startDate).replace(/\//g, '-')}_al_${formatDateIT(endDate).replace(/\//g, '-')}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    };
+
+    window.exportToWhatsApp = function() {
+      const startDate = document.getElementById('exportStart').value;
+      const endDate = document.getElementById('exportEnd').value;
+
+      if (!startDate || !endDate) {
+        alert("Seleziona sia la data di inizio che la data di fine.");
+        return;
       }
 
-      renderChart(catTotals);
-    }
+      if (startDate > endDate) {
+        alert("La data di inizio non può essere successiva alla data di fine.");
+        return;
+      }
 
-    function renderChart(catTotals) {
-      if (typeof Chart === 'undefined') return;
-      try {
-        const canvas = document.getElementById('chartCategory');
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        
-        const labels = Object.keys(catTotals);
-        const data = Object.values(catTotals);
+      const logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+      const filtered = logs
+        .filter(entry => entry.date >= startDate && entry.date <= endDate)
+        .sort((a, b) => a.date.localeCompare(b.date));
 
-        if (chartInstance) {
-          chartInstance.destroy();
-        }
+      if (filtered.length === 0) {
+        alert("Nessun dato trovato nel periodo selezionato.");
+        return;
+      }
 
-        const displayLabels = labels.length > 0 ? labels : ['Nessuna spesa'];
-        const displayData = labels.length > 0 ? data : [1];
-        const displayColors = labels.length > 0 
-          ? ['#ff007f', '#bf00ff', '#ff6600', '#39ff14', '#ccff00', '#9d4edd', '#ff0055', '#ff9e00']
-          : ['#1f2937'];
+      let message = `*Riepilogo Ore di Lavoro*\n`;
+      message += `📅 Periodo: ${formatDateIT(startDate)} - ${formatDateIT(endDate)}\n\n`;
 
-        chartInstance = new Chart(ctx, {
-          type: 'doughnut',
-          data: {
-            labels: displayLabels,
-            datasets: [{
-              data: displayData,
-              backgroundColor: displayColors,
-              borderWidth: 2,
-              borderColor: '#111827'
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: { color: '#e2e8f0', padding: 15, font: { size: 12 } }
-              }
-            }
+      let totalWorkedMins = 0;
+      let totalOvertimeMins = 0;
+      let totalPermissionMins = 0;
+      let holidayCount = 0;
+
+      filtered.forEach(entry => {
+        message += `• *${formatDateIT(entry.date)}*\n`;
+        if (entry.isHoliday) {
+          holidayCount++;
+          message += `  🌴 *FERIE*\n`;
+        } else {
+          const [wH, wM] = entry.workedFormatted.split(':').map(Number);
+          totalWorkedMins += (wH * 60 + wM);
+          if (entry.overtimeMinutes >= 0) {
+            totalOvertimeMins += entry.overtimeMinutes;
+          } else {
+            totalPermissionMins += Math.abs(entry.overtimeMinutes);
           }
-        });
-      } catch (err) {
-        console.error("Errore grafico:", err);
-      }
-    }
+          message += `  🕒 ${entry.startM}-${entry.endM} | ${entry.startA}-${entry.endTime}\n`;
+          message += `  ⏱️ Lavorate: ${entry.workedFormatted} | Straord: ${entry.overtimeFormatted}\n`;
+        }
+        if (entry.note) {
+          message += `  📝 Nota: ${entry.note}\n`;
+        }
+        message += `\n`;
+      });
 
-    function exportJSON() {
-      try {
-        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'budget_backup.json';
-        a.click();
-      } catch(e) {}
-    }
+      message += `-------------------\n`;
+      message += `*TOTALE ORE LAVORATE:* ${formatMinutes(totalWorkedMins)}\n`;
+      message += `*TOTALE STRAORDINARIO:* ${formatMinutes(totalOvertimeMins, true)}\n`;
+      message += `*TOTALE PERMESSI (IN MENO):* ${formatMinutes(totalPermissionMins)}\n`;
+      message += `*TOTALE FERIE:* ${holidayCount} giorni`;
 
-    function importJSON(event) {
+      const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    };
+
+    // Backup e Ripristino JSON
+    window.exportBackupJSON = function() {
+      const logs = localStorage.getItem('work_logs') || '[]';
+      const blob = new Blob([logs], { type: 'application/json;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const dateStr = new Date().toISOString().slice(0, 10);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `backup_ore_lavoro_${dateStr}.json`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    };
+
+    window.importBackupJSON = function(event) {
       const file = event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
-          const imported = JSON.parse(e.target.result);
-          if (imported && Array.isArray(imported.transactions)) {
-            if (confirm(`Trovate ${imported.transactions.length} transazioni nel backup. Vuoi sostituire i dati attuali e ripristinarlo?`)) {
-              state.transactions = imported.transactions;
-              if (Array.isArray(imported.categories) && imported.categories.length > 0) {
-                state.categories = imported.categories;
-              }
-
-              state.transactions.sort((a, b) => {
-                if (b.date !== a.date) {
-                  return b.date.localeCompare(a.date);
-                }
-                return b.id - a.id;
-              });
-
-              try {
-                localStorage.setItem('bg_transactions', JSON.stringify(state.transactions));
-                localStorage.setItem('bg_categories', JSON.stringify(state.categories));
-              } catch(err) {}
-              
-              renderCategories();
-              renderDashboard();
-              alert('Backup ripristinato con successo!');
-              switchTab('dashboard');
+          const importedData = JSON.parse(e.target.result);
+          if (Array.isArray(importedData)) {
+            if (confirm(`Trovati ${importedData.length} record nel file di backup. Vuoi sovrascrivere o unire i dati attuali? (OK = Sovrascrivi, Annulla = Unisci)`)) {
+              localStorage.setItem('work_logs', JSON.stringify(importedData));
+            } else {
+              const existingLogs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+              const existingIds = new Set(existingLogs.map(item => item.id));
+              const mergedLogs = [...existingLogs, ...importedData.filter(item => !existingIds.has(item.id))];
+              localStorage.setItem('work_logs', JSON.stringify(mergedLogs));
             }
+            loadLogs();
+            alert("Backup JSON ripristinato con successo!");
           } else {
-            alert('Il file selezionato non è un backup valido di Budget Familiare.');
+            alert("Il file non è valido.");
           }
         } catch (err) {
-          alert('Errore nella lettura del file JSON: ' + err.message);
-        } finally {
-          event.target.value = '';
+          alert("Errore durante la lettura del file JSON.");
         }
+        event.target.value = '';
       };
       reader.readAsText(file);
-    }
+    };
 
-    function exportCSV() {
-      try {
-        let csv = 'Data,Tipo,Categoria,Note,Importo\n';
-        state.transactions.forEach(t => {
-          csv += `${t.date},${t.type},${t.category},"${t.note || ''}",${t.amount}\n`;
+    // Importazione da vecchio file CSV
+    window.importCSV = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const text = e.target.result;
+          const lines = text.split(/\r?\n/);
+          let importedLogs = [];
+
+          for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line || line.startsWith("TOTALE PERIODO")) continue;
+
+            const cols = line.split(';');
+            if (cols.length >= 8) {
+              const dateParts = cols[0].split('/');
+              if (dateParts.length === 3) {
+                const isoDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+                const isHoliday = (cols[1].trim().toLowerCase() === 'ferie');
+                
+                let startM = "08:00";
+                let endM = "12:30";
+                let startA = "14:30";
+                let endTime = "18:00";
+                let workedMinutes = DAILY_STANDARD_MINUTES;
+                let overtimeMinutes = 0;
+
+                if (!isHoliday) {
+                  startM = cols[2].trim() || "08:00";
+                  endM = cols[3].trim() || "12:30";
+                  startA = cols[4].trim() || "14:30";
+                  endTime = cols[5].trim() || "18:00";
+
+                  const mMin = timeToMinutes(endM) - timeToMinutes(startM);
+                  const aMin = timeToMinutes(endTime) - timeToMinutes(startA);
+                  workedMinutes = (mMin > 0 ? mMin : 0) + (aMin > 0 ? aMin : 0);
+                  overtimeMinutes = workedMinutes - DAILY_STANDARD_MINUTES;
+                }
+
+                let note = cols[8] ? cols[8].replace(/^"|"$/g, '').trim() : '';
+
+                importedLogs.push({
+                  id: Date.now() + i,
+                  date: isoDate,
+                  isHoliday,
+                  startM,
+                  endM,
+                  startA,
+                  endTime,
+                  workedFormatted: formatMinutes(workedMinutes),
+                  overtimeFormatted: formatMinutes(overtimeMinutes, true),
+                  overtimeMinutes,
+                  note
+                });
+              }
+            }
+          }
+
+          if (importedLogs.length > 0) {
+            if (confirm(`Trovati ${importedLogs.length} record nel file CSV. Vuoi sovrascrivere o unire i dati attuali? (OK = Sovrascrivi, Annulla = Unisci)`)) {
+              localStorage.setItem('work_logs', JSON.stringify(importedLogs));
+            } else {
+              const existingLogs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+              const existingDates = new Set(existingLogs.map(item => item.date));
+              const mergedLogs = [...existingLogs, ...importedLogs.filter(item => !existingDates.has(item.date))];
+              localStorage.setItem('work_logs', JSON.stringify(mergedLogs));
+            }
+            loadLogs();
+            alert("CSV importato con successo!");
+          } else {
+            alert("Nessun record valido trovato nel file CSV.");
+          }
+        } catch (err) {
+          alert("Errore durante l'elaborazione del file CSV.");
+        }
+        event.target.value = '';
+      };
+      reader.readAsText(file);
+    };
+
+    document.getElementById('workForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const editId = document.getElementById('editId').value;
+      const date = document.getElementById('date').value;
+      const isHoliday = document.getElementById('isHoliday').checked;
+      const note = document.getElementById('note').value.trim();
+
+      let startMStr = "08:00";
+      let endMStr = "12:30";
+      let startAStr = "14:30";
+      let endAStr = "18:00";
+      let workedMinutes = DAILY_STANDARD_MINUTES;
+      let overtimeMinutes = 0;
+
+      if (!isHoliday) {
+        startMStr = document.getElementById('startTime').value;
+        endMStr = document.getElementById('endMorning').value;
+        startAStr = document.getElementById('startAfternoon').value;
+        endAStr = document.getElementById('endTime').value;
+
+        const startM = timeToMinutes(startMStr);
+        const endM = timeToMinutes(endMStr);
+        const startA = timeToMinutes(startAStr);
+        const endA = timeToMinutes(endAStr);
+
+        const morningMinutes = endM - startM;
+        const afternoonMinutes = endA - startA;
+        workedMinutes = (morningMinutes > 0 ? morningMinutes : 0) + (afternoonMinutes > 0 ? afternoonMinutes : 0);
+        overtimeMinutes = workedMinutes - DAILY_STANDARD_MINUTES;
+      }
+
+      let logs = JSON.parse(localStorage.getItem('work_logs') || '[]');
+
+      if (editId) {
+        logs = logs.map(entry => {
+          if (entry.id == editId) {
+            return {
+              ...entry,
+              date,
+              isHoliday,
+              startM: startMStr,
+              endM: endMStr,
+              startA: startAStr,
+              endTime: endAStr,
+              workedFormatted: formatMinutes(workedMinutes),
+              overtimeFormatted: formatMinutes(overtimeMinutes, true),
+              overtimeMinutes,
+              note
+            };
+          }
+          return entry;
         });
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'budget_movimenti.csv';
-        a.click();
-      } catch(e) {}
+      } else {
+        const entry = {
+          id: Date.now(),
+          date,
+          isHoliday,
+          startM: startMStr,
+          endM: endMStr,
+          startA: startAStr,
+          endTime: endAStr,
+          workedFormatted: formatMinutes(workedMinutes),
+          overtimeFormatted: formatMinutes(overtimeMinutes, true),
+          overtimeMinutes,
+          note
+        };
+        logs.push(entry);
+      }
+
+      localStorage.setItem('work_logs', JSON.stringify(logs));
+      resetForm();
+      loadLogs();
+    });
+
+    loadLogs();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
     }
   </script>
+
 </body>
 </html>
