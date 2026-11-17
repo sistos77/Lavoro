@@ -752,7 +752,7 @@
       reader.readAsText(file);
     };
 
-    // Importazione da vecchio file CSV
+    // Importazione robusta da file CSV
     window.importCSV = function(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -764,16 +764,21 @@
           const lines = text.split(/\r?\n/);
           let importedLogs = [];
 
-          for (let i = 1; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line || line.startsWith("TOTALE PERIODO")) continue;
+          for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (!line || line.startsWith("Data;") || line.startsWith("TOTALE PERIODO") || line.startsWith("\uFEFFDATA")) continue;
+            // Rimuove eventuale BOM iniziale se presente
+            line = line.replace(/^\uFEFF/, "");
 
             const cols = line.split(';');
             if (cols.length >= 8) {
-              const dateParts = cols[0].split('/');
+              const dateRaw = cols[0].trim();
+              const dateParts = dateRaw.split('/');
+              
               if (dateParts.length === 3) {
                 const isoDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
-                const isHoliday = (cols[1].trim().toLowerCase() === 'ferie');
+                const tipoCol = cols[1].trim().toLowerCase();
+                const isHoliday = (tipoCol.includes('ferie'));
                 
                 let startM = "08:00";
                 let endM = "12:30";
@@ -783,10 +788,15 @@
                 let overtimeMinutes = 0;
 
                 if (!isHoliday) {
-                  startM = cols[2].trim() || "08:00";
-                  endM = cols[3].trim() || "12:30";
-                  startA = cols[4].trim() || "14:30";
-                  endTime = cols[5].trim() || "18:00";
+                  let sM = cols[2].trim();
+                  let eM = cols[3].trim();
+                  let sA = cols[4].trim();
+                  let eA = cols[5].trim();
+
+                  if (sM && sM !== '-') startM = sM;
+                  if (eM && eM !== '-') endM = eM;
+                  if (sA && sA !== '-') startA = sA;
+                  if (eA && eA !== '-') endTime = eA;
 
                   const mMin = timeToMinutes(endM) - timeToMinutes(startM);
                   const aMin = timeToMinutes(endTime) - timeToMinutes(startA);
@@ -794,7 +804,10 @@
                   overtimeMinutes = workedMinutes - DAILY_STANDARD_MINUTES;
                 }
 
-                let note = cols[8] ? cols[8].replace(/^"|"$/g, '').trim() : '';
+                let note = '';
+                if (cols[8]) {
+                  note = cols[8].replace(/^"|"$/g, '').trim();
+                }
 
                 importedLogs.push({
                   id: Date.now() + i,
@@ -825,7 +838,7 @@
             loadLogs();
             alert("CSV importato con successo!");
           } else {
-            alert("Nessun record valido trovato nel file CSV.");
+            alert("Nessun record valido trovato nel file CSV. Assicurati che sia il file generato da questa app.");
           }
         } catch (err) {
           alert("Errore durante l'elaborazione del file CSV.");
