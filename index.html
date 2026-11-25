@@ -33,14 +33,6 @@
       max-width: 480px;
     }
 
-    .page-section {
-      display: none;
-    }
-
-    .page-section.active {
-      display: block;
-    }
-
     h1 {
       text-align: center;
       font-size: 1.5rem;
@@ -144,20 +136,6 @@
     .btn-action-custom {
       background-color: var(--accent-neon);
       color: #000;
-    }
-
-    .btn-secondary-nav {
-      background-color: #2a2a2a;
-      color: var(--accent-neon);
-      border: 1px solid var(--accent-neon);
-    }
-
-    .btn-back {
-      background-color: #2a2a2a;
-      color: #fff;
-      border: 1px solid var(--border);
-      margin-top: 0;
-      margin-bottom: 16px;
     }
 
     /* Box riepilogo mensile */
@@ -278,141 +256,133 @@
 <body>
 
   <div class="container">
-    <!-- PAGINA 1: REGISTRO PRINCIPALE -->
-    <div id="mainPage" class="page-section active">
-      <h1 id="mainTitle">Ore di Lavoro</h1>
+    <h1 id="mainTitle">Ore di Lavoro</h1>
 
-      <div class="card">
-        <form id="workForm">
-          <input type="hidden" id="editId">
-          
-          <div class="form-group">
-            <label for="date">Data</label>
-            <input type="date" id="date" required>
-          </div>
-
-          <div class="row-inputs">
-            <div class="form-group">
-              <label for="startTime">Inizio Mattina</label>
-              <input type="time" id="startTime" value="08:00" required>
-            </div>
-            <div class="form-group">
-              <label for="endMorning">Fine Mattina</label>
-              <input type="time" id="endMorning" value="12:30" required>
-            </div>
-          </div>
-
-          <div class="row-inputs">
-            <div class="form-group">
-              <label for="startAfternoon">Inizio Pomeriggio</label>
-              <input type="time" id="startAfternoon" value="14:30" required>
-            </div>
-            <div class="form-group">
-              <label for="endTime">Fine Pomeriggio</label>
-              <input type="time" id="endTime" value="18:00" required>
-            </div>
-          </div>
-
-          <div class="checkbox-group">
-            <input type="checkbox" id="isHoliday">
-            <label for="isHoliday">Segna come Giornata di Ferie 🌴</label>
-          </div>
-
-          <div class="form-group" style="margin-top: 12px;">
-            <label for="note">Nota / Giustificativo</label>
-            <textarea id="note" placeholder="Es. Lavoro extra o motivazione ferie/permesso..."></textarea>
-          </div>
-
-          <button type="submit" id="submitBtn">Salva Giornata</button>
-          <button type="button" id="cancelBtn" class="btn-cancel" onclick="resetForm()">Annulla Modifica</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Registro & Riepilogo</h2>
+    <div class="card">
+      <form id="workForm">
+        <input type="hidden" id="editId">
         
-        <div class="filter-container">
-          <select id="monthFilter" onchange="loadLogs()"></select>
+        <div class="form-group">
+          <label for="date">Data</label>
+          <input type="date" id="date" required>
         </div>
 
-        <div class="summary-box">
-          <span class="summary-title">Totale Straordinario Mese:</span>
-          <span id="monthlyTotal" class="summary-value" style="color: var(--accent-neon);">+00:00</span>
-        </div>
-
-        <div class="summary-box">
-          <span class="summary-title">Totale Permessi (Ore in meno):</span>
-          <span id="monthlyPermission" class="summary-value" style="color: var(--accent-minus);">00:00</span>
-        </div>
-
-        <div class="summary-box">
-          <span class="summary-title">Totale Ferie Mese:</span>
-          <span id="monthlyHoliday" class="summary-value" style="color: var(--accent-holiday);">0 giorni</span>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Data / Orari / Nota</th>
-              <th>Tot.</th>
-              <th>Stato / Straord.</th>
-              <th>Azioni</th>
-            </tr>
-          </thead>
-          <tbody id="logTableBody"></tbody>
-        </table>
-      </div>
-
-      <button type="button" class="btn-secondary-nav" onclick="openFilesPage()">
-        📁 Esportazione & Backup
-      </button>
-    </div>
-
-    <!-- PAGINA 2: ESPORTAZIONE & BACKUP -->
-    <div id="filesPage" class="page-section">
-      <h1>Esportazione & Backup</h1>
-
-      <button type="button" class="btn-back" onclick="openMainPage()">
-        ← Torna al Registro Principale
-      </button>
-
-      <div class="card">
-        <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Esporta Dati</h2>
         <div class="row-inputs">
           <div class="form-group">
-            <label for="exportStart">Dal giorno</label>
-            <input type="date" id="exportStart">
+            <label for="startTime">Inizio Mattina</label>
+            <input type="time" id="startTime" value="08:00" required>
           </div>
           <div class="form-group">
-            <label for="exportEnd">Al giorno</label>
-            <input type="date" id="exportEnd">
+            <label for="endMorning">Fine Mattina</label>
+            <input type="time" id="endMorning" value="12:30" required>
           </div>
         </div>
-        <button type="button" class="btn-action-custom" onclick="exportToExcel()">Scarica File Excel (.csv)</button>
-        <button type="button" class="btn-action-custom" onclick="exportToWhatsApp()">Invia su WhatsApp 💬</button>
+
+        <div class="row-inputs">
+          <div class="form-group">
+            <label for="startAfternoon">Inizio Pomeriggio</label>
+            <input type="time" id="startAfternoon" value="14:30" required>
+          </div>
+          <div class="form-group">
+            <label for="endTime">Fine Pomeriggio</label>
+            <input type="time" id="endTime" value="18:00" required>
+          </div>
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="isHoliday">
+          <label for="isHoliday">Segna come Giornata di Ferie 🌴</label>
+        </div>
+
+        <div class="form-group" style="margin-top: 12px;">
+          <label for="note">Nota / Giustificativo</label>
+          <textarea id="note" placeholder="Es. Lavoro extra o motivazione ferie/permesso..."></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn">Salva Giornata</button>
+        <button type="button" id="cancelBtn" class="btn-cancel" onclick="resetForm()">Annulla Modifica</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Registro & Riepilogo</h2>
+      
+      <!-- Filtro Mese -->
+      <div class="filter-container">
+        <select id="monthFilter" onchange="loadLogs()">
+          <!-- Popolato dinamicamente via JS -->
+        </select>
       </div>
 
-      <div class="card">
-        <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Backup & Ripristino</h2>
-        <p style="font-size: 0.8rem; color: var(--subtext); margin-top: 0;">Salva o ripristina i dati tramite file JSON o il tuo vecchio file CSV.</p>
-        
-        <button type="button" class="btn-action-custom" onclick="exportBackupJSON()">Scarica Backup (JSON) 💾</button>
-        
-        <div style="margin-top: 12px;">
-          <label for="importFile" style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--subtext);">Ripristina da file JSON</label>
-          <input type="file" id="importFile" accept=".json" onchange="importBackupJSON(event)" style="padding: 6px; font-size: 0.85rem;">
-        </div>
+      <!-- Box Riepiloghi Mese con colori fluo -->
+      <div class="summary-box">
+        <span class="summary-title">Totale Straordinario Mese:</span>
+        <span id="monthlyTotal" class="summary-value" style="color: var(--accent-neon);">+00:00</span>
+      </div>
 
-        <div style="margin-top: 14px;">
-          <label for="importCsvFile" style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--subtext);">Importa da vecchio file CSV (Excel)</label>
-          <input type="file" id="importCsvFile" accept=".csv" onchange="importCSV(event)" style="padding: 6px; font-size: 0.85rem;">
+      <div class="summary-box">
+        <span class="summary-title">Totale Permessi (Ore in meno):</span>
+        <span id="monthlyPermission" class="summary-value" style="color: var(--accent-minus);">00:00</span>
+      </div>
+
+      <div class="summary-box">
+        <span class="summary-title">Totale Ferie Mese:</span>
+        <span id="monthlyHoliday" class="summary-value" style="color: var(--accent-holiday);">0 giorni</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Data / Orari / Nota</th>
+            <th>Tot.</th>
+            <th>Stato / Straord.</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
+        <tbody id="logTableBody">
+          <!-- I dati salvati compariranno qui -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Card Esportazione -->
+    <div class="card">
+      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Esporta Dati</h2>
+      <div class="row-inputs">
+        <div class="form-group">
+          <label for="exportStart">Dal giorno</label>
+          <input type="date" id="exportStart">
         </div>
+        <div class="form-group">
+          <label for="exportEnd">Al giorno</label>
+          <input type="date" id="exportEnd">
+        </div>
+      </div>
+      <button type="button" class="btn-action-custom" onclick="exportToExcel()">Scarica File Excel (.csv)</button>
+      <button type="button" class="btn-action-custom" onclick="exportToWhatsApp()">Invia su WhatsApp 💬</button>
+    </div>
+
+    <!-- Card Backup e Ripristino -->
+    <div class="card">
+      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Backup & Ripristino</h2>
+      <p style="font-size: 0.8rem; color: var(--subtext); margin-top: 0;">Salva o ripristina i dati tramite file JSON o il tuo vecchio file CSV.</p>
+      
+      <button type="button" class="btn-action-custom" onclick="exportBackupJSON()">Scarica Backup (JSON) 💾</button>
+      
+      <div style="margin-top: 12px;">
+        <label for="importFile" style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--subtext);">Ripristina da file JSON</label>
+        <input type="file" id="importFile" accept=".json" onchange="importBackupJSON(event)" style="padding: 6px; font-size: 0.85rem;">
+      </div>
+
+      <div style="margin-top: 14px;">
+        <label for="importCsvFile" style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--subtext);">Importa da vecchio file CSV (Excel)</label>
+        <input type="file" id="importCsvFile" accept=".csv" onchange="importCSV(event)" style="padding: 6px; font-size: 0.85rem;">
       </div>
     </div>
   </div>
 
   <script>
-    const DAILY_STANDARD_MINUTES = 8 * 60;
+    const DAILY_STANDARD_MINUTES = 8 * 60; // 8 ore standard
 
     const today = new Date();
     document.getElementById('date').valueAsDate = today;
@@ -429,18 +399,6 @@
 
     document.getElementById('exportStart').value = toInputDateStr(firstDayOfMonth);
     document.getElementById('exportEnd').value = toInputDateStr(lastDayOfMonth);
-
-    window.openFilesPage = function() {
-      document.getElementById('mainPage').classList.remove('active');
-      document.getElementById('filesPage').classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.openMainPage = function() {
-      document.getElementById('filesPage').classList.remove('active');
-      document.getElementById('mainPage').classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
 
     function timeToMinutes(timeStr) {
       if (!timeStr) return 0;
@@ -749,6 +707,7 @@
       window.open(whatsappUrl, '_blank');
     };
 
+    // Backup e Ripristino JSON
     window.exportBackupJSON = function() {
       const logs = localStorage.getItem('work_logs') || '[]';
       const blob = new Blob([logs], { type: 'application/json;charset=utf-8;' });
@@ -793,6 +752,7 @@
       reader.readAsText(file);
     };
 
+    // Importazione robusta da file CSV
     window.importCSV = function(event) {
       const file = event.target.files[0];
       if (!file) return;
