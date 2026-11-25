@@ -33,6 +33,14 @@
       max-width: 480px;
     }
 
+    .page-section {
+      display: none;
+    }
+
+    .page-section.active {
+      display: block;
+    }
+
     h1 {
       text-align: center;
       font-size: 1.5rem;
@@ -136,6 +144,20 @@
     .btn-action-custom {
       background-color: var(--accent-neon);
       color: #000;
+    }
+
+    .btn-secondary-nav {
+      background-color: #2a2a2a;
+      color: var(--accent-neon);
+      border: 1px solid var(--accent-neon);
+    }
+
+    .btn-back {
+      background-color: #2a2a2a;
+      color: #fff;
+      border: 1px solid var(--border);
+      margin-top: 0;
+      margin-bottom: 16px;
     }
 
     /* Box riepilogo mensile */
@@ -251,138 +273,293 @@
       display: block;
       margin-top: 2px;
     }
+
+    /* Layout PDF / Stampa dedicato */
+    #pdfExportModal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 999;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .pdf-sheet {
+      background: #ffffff;
+      color: #111111;
+      max-width: 820px;
+      margin: 0 auto;
+      border-radius: 10px;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    .pdf-toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .pdf-toolbar button {
+      margin-top: 0;
+    }
+
+    .pdf-header {
+      border-bottom: 2px solid #111;
+      padding-bottom: 10px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pdf-header h2 {
+      margin: 0;
+      font-size: 1.35rem;
+      color: #111;
+    }
+
+    .pdf-grid {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 18px;
+    }
+
+    .pdf-grid th,
+    .pdf-grid td {
+      border: 1px solid #444;
+      padding: 8px 10px;
+      color: #111;
+      font-size: 0.85rem;
+      vertical-align: top;
+    }
+
+    .pdf-grid th {
+      background: #ececec;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .pdf-summary-boxes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .pdf-box {
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 10px;
+      background: #f8f8f8;
+    }
+
+    .pdf-box span {
+      display: block;
+      font-size: 0.75rem;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    .pdf-box strong {
+      font-size: 1.05rem;
+      color: #111;
+    }
+
+    .pdf-notes-box {
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 12px;
+      background: #fafafa;
+    }
+
+    .pdf-notes-box h3 {
+      margin: 0 0 8px 0;
+      font-size: 0.95rem;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 4px;
+    }
+
+    .pdf-note-item {
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+      line-height: 1.35;
+    }
+
+    @media print {
+      body > *:not(#pdfExportModal) {
+        display: none !important;
+      }
+      #pdfExportModal {
+        position: static !important;
+        background: #fff !important;
+        padding: 0 !important;
+        overflow: visible !important;
+      }
+      .pdf-toolbar {
+        display: none !important;
+      }
+      .pdf-sheet {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+    }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <h1 id="mainTitle">Ore di Lavoro</h1>
+    <!-- PAGINA 1: REGISTRO PRINCIPALE -->
+    <div id="mainPage" class="page-section active">
+      <h1 id="mainTitle">Ore di Lavoro</h1>
 
-    <div class="card">
-      <form id="workForm">
-        <input type="hidden" id="editId">
+      <div class="card">
+        <form id="workForm">
+          <input type="hidden" id="editId">
+          
+          <div class="form-group">
+            <label for="date">Data</label>
+            <input type="date" id="date" required>
+          </div>
+
+          <div class="row-inputs">
+            <div class="form-group">
+              <label for="startTime">Inizio Mattina</label>
+              <input type="time" id="startTime" value="08:00" required>
+            </div>
+            <div class="form-group">
+              <label for="endMorning">Fine Mattina</label>
+              <input type="time" id="endMorning" value="12:30" required>
+            </div>
+          </div>
+
+          <div class="row-inputs">
+            <div class="form-group">
+              <label for="startAfternoon">Inizio Pomeriggio</label>
+              <input type="time" id="startAfternoon" value="14:30" required>
+            </div>
+            <div class="form-group">
+              <label for="endTime">Fine Pomeriggio</label>
+              <input type="time" id="endTime" value="18:00" required>
+            </div>
+          </div>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="isHoliday">
+            <label for="isHoliday">Segna come Giornata di Ferie 🌴</label>
+          </div>
+
+          <div class="form-group" style="margin-top: 12px;">
+            <label for="note">Nota / Giustificativo</label>
+            <textarea id="note" placeholder="Es. Lavoro extra o motivazione ferie/permesso..."></textarea>
+          </div>
+
+          <button type="submit" id="submitBtn">Salva Giornata</button>
+          <button type="button" id="cancelBtn" class="btn-cancel" onclick="resetForm()">Annulla Modifica</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Registro & Riepilogo</h2>
         
-        <div class="form-group">
-          <label for="date">Data</label>
-          <input type="date" id="date" required>
+        <div class="filter-container">
+          <select id="monthFilter" onchange="loadLogs()"></select>
         </div>
 
+        <div class="summary-box">
+          <span class="summary-title">Totale Straordinario Mese:</span>
+          <span id="monthlyTotal" class="summary-value" style="color: var(--accent-neon);">+00:00</span>
+        </div>
+
+        <div class="summary-box">
+          <span class="summary-title">Totale Permessi (Ore in meno):</span>
+          <span id="monthlyPermission" class="summary-value" style="color: var(--accent-minus);">00:00</span>
+        </div>
+
+        <div class="summary-box">
+          <span class="summary-title">Totale Ferie Mese:</span>
+          <span id="monthlyHoliday" class="summary-value" style="color: var(--accent-holiday);">0 giorni</span>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Data / Orari / Nota</th>
+              <th>Tot.</th>
+              <th>Stato / Straord.</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody id="logTableBody"></tbody>
+        </table>
+      </div>
+
+      <button type="button" class="btn-secondary-nav" onclick="openFilesPage()">
+        📁 Esportazione, PDF & Backup
+      </button>
+    </div>
+
+    <!-- PAGINA 2: ESPORTAZIONE PDF, WHATSAPP & BACKUP -->
+    <div id="filesPage" class="page-section">
+      <h1>Esportazione & Backup</h1>
+
+      <button type="button" class="btn-back" onclick="openMainPage()">
+        ← Torna al Registro Principale
+      </button>
+
+      <div class="card">
+        <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Esporta Periodo</h2>
         <div class="row-inputs">
           <div class="form-group">
-            <label for="startTime">Inizio Mattina</label>
-            <input type="time" id="startTime" value="08:00" required>
+            <label for="exportStart">Dal giorno</label>
+            <input type="date" id="exportStart">
           </div>
           <div class="form-group">
-            <label for="endMorning">Fine Mattina</label>
-            <input type="time" id="endMorning" value="12:30" required>
+            <label for="exportEnd">Al giorno</label>
+            <input type="date" id="exportEnd">
           </div>
         </div>
+        <button type="button" class="btn-action-custom" onclick="openPdfExport()">Genera PDF a Caselle 📄</button>
+        <button type="button" class="btn-action-custom" onclick="exportToWhatsApp()">Invia su WhatsApp 💬</button>
+      </div>
 
-        <div class="row-inputs">
-          <div class="form-group">
-            <label for="startAfternoon">Inizio Pomeriggio</label>
-            <input type="time" id="startAfternoon" value="14:30" required>
-          </div>
-          <div class="form-group">
-            <label for="endTime">Fine Pomeriggio</label>
-            <input type="time" id="endTime" value="18:00" required>
-          </div>
+      <div class="card">
+        <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Backup & Ripristino</h2>
+        <p style="font-size: 0.8rem; color: var(--subtext); margin-top: 0;">Salva o ripristina i dati tramite file JSON o il tuo vecchio file CSV.</p>
+        
+        <button type="button" class="btn-action-custom" onclick="exportBackupJSON()">Scarica Backup (JSON) 💾</button>
+        
+        <div style="margin-top: 12px;">
+          <label for="importFile" style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--subtext);">Ripristina da file JSON</label>
+          <input type="file" id="importFile" accept=".json" onchange="importBackupJSON(event)" style="padding: 6px; font-size: 0.85rem;">
         </div>
 
-        <div class="checkbox-group">
-          <input type="checkbox" id="isHoliday">
-          <label for="isHoliday">Segna come Giornata di Ferie 🌴</label>
+        <div style="margin-top: 14px;">
+          <label for="importCsvFile" style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--subtext);">Importa da vecchio file CSV (Excel)</label>
+          <input type="file" id="importCsvFile" accept=".csv" onchange="importCSV(event)" style="padding: 6px; font-size: 0.85rem;">
         </div>
-
-        <div class="form-group" style="margin-top: 12px;">
-          <label for="note">Nota / Giustificativo</label>
-          <textarea id="note" placeholder="Es. Lavoro extra o motivazione ferie/permesso..."></textarea>
-        </div>
-
-        <button type="submit" id="submitBtn">Salva Giornata</button>
-        <button type="button" id="cancelBtn" class="btn-cancel" onclick="resetForm()">Annulla Modifica</button>
-      </form>
-    </div>
-
-    <div class="card">
-      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Registro & Riepilogo</h2>
-      
-      <!-- Filtro Mese -->
-      <div class="filter-container">
-        <select id="monthFilter" onchange="loadLogs()">
-          <!-- Popolato dinamicamente via JS -->
-        </select>
-      </div>
-
-      <!-- Box Riepiloghi Mese con colori fluo -->
-      <div class="summary-box">
-        <span class="summary-title">Totale Straordinario Mese:</span>
-        <span id="monthlyTotal" class="summary-value" style="color: var(--accent-neon);">+00:00</span>
-      </div>
-
-      <div class="summary-box">
-        <span class="summary-title">Totale Permessi (Ore in meno):</span>
-        <span id="monthlyPermission" class="summary-value" style="color: var(--accent-minus);">00:00</span>
-      </div>
-
-      <div class="summary-box">
-        <span class="summary-title">Totale Ferie Mese:</span>
-        <span id="monthlyHoliday" class="summary-value" style="color: var(--accent-holiday);">0 giorni</span>
-      </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Data / Orari / Nota</th>
-            <th>Tot.</th>
-            <th>Stato / Straord.</th>
-            <th>Azioni</th>
-          </tr>
-        </thead>
-        <tbody id="logTableBody">
-          <!-- I dati salvati compariranno qui -->
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Card Esportazione -->
-    <div class="card">
-      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Esporta Dati</h2>
-      <div class="row-inputs">
-        <div class="form-group">
-          <label for="exportStart">Dal giorno</label>
-          <input type="date" id="exportStart">
-        </div>
-        <div class="form-group">
-          <label for="exportEnd">Al giorno</label>
-          <input type="date" id="exportEnd">
-        </div>
-      </div>
-      <button type="button" class="btn-action-custom" onclick="exportToExcel()">Scarica File Excel (.csv)</button>
-      <button type="button" class="btn-action-custom" onclick="exportToWhatsApp()">Invia su WhatsApp 💬</button>
-    </div>
-
-    <!-- Card Backup e Ripristino -->
-    <div class="card">
-      <h2 style="font-size:1.1rem; margin-top:0; color: var(--accent-neon);">Backup & Ripristino</h2>
-      <p style="font-size: 0.8rem; color: var(--subtext); margin-top: 0;">Salva o ripristina i dati tramite file JSON o il tuo vecchio file CSV.</p>
-      
-      <button type="button" class="btn-action-custom" onclick="exportBackupJSON()">Scarica Backup (JSON) 💾</button>
-      
-      <div style="margin-top: 12px;">
-        <label for="importFile" style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--subtext);">Ripristina da file JSON</label>
-        <input type="file" id="importFile" accept=".json" onchange="importBackupJSON(event)" style="padding: 6px; font-size: 0.85rem;">
-      </div>
-
-      <div style="margin-top: 14px;">
-        <label for="importCsvFile" style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--subtext);">Importa da vecchio file CSV (Excel)</label>
-        <input type="file" id="importCsvFile" accept=".csv" onchange="importCSV(event)" style="padding: 6px; font-size: 0.85rem;">
       </div>
     </div>
   </div>
 
+  <!-- MODALE / PAGINA DEDICATA AL PDF A CASELLE -->
+  <div id="pdfExportModal">
+    <div class="pdf-sheet">
+      <div class="pdf-toolbar">
+        <button type="button" class="btn-action-custom" onclick="window.print()">🖨️ Salva / Stampa PDF</button>
+        <button type="button" style="background:#444; color:#fff;" onclick="closePdfExport()">Chiudi</button>
+      </div>
+      <div id="pdfContentArea"></div>
+    </div>
+  </div>
+
   <script>
-    const DAILY_STANDARD_MINUTES = 8 * 60; // 8 ore standard
+    const DAILY_STANDARD_MINUTES = 8 * 60;
 
     const today = new Date();
     document.getElementById('date').valueAsDate = today;
@@ -399,6 +576,18 @@
 
     document.getElementById('exportStart').value = toInputDateStr(firstDayOfMonth);
     document.getElementById('exportEnd').value = toInputDateStr(lastDayOfMonth);
+
+    window.openFilesPage = function() {
+      document.getElementById('mainPage').classList.remove('active');
+      document.getElementById('filesPage').classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.openMainPage = function() {
+      document.getElementById('filesPage').classList.remove('active');
+      document.getElementById('mainPage').classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     function timeToMinutes(timeStr) {
       if (!timeStr) return 0;
@@ -486,14 +675,9 @@
         }
       });
 
-      const monthlyTotalEl = document.getElementById('monthlyTotal');
-      monthlyTotalEl.textContent = formatMinutes(totalMonthOvertime, true);
-      
-      const monthlyPermissionEl = document.getElementById('monthlyPermission');
-      monthlyPermissionEl.textContent = formatMinutes(totalMonthPermission);
-
-      const monthlyHolidayEl = document.getElementById('monthlyHoliday');
-      monthlyHolidayEl.textContent = `${totalMonthHolidays} ${totalMonthHolidays === 1 ? 'giorno' : 'giorni'}`;
+      document.getElementById('monthlyTotal').textContent = formatMinutes(totalMonthOvertime, true);
+      document.getElementById('monthlyPermission').textContent = formatMinutes(totalMonthPermission);
+      document.getElementById('monthlyHoliday').textContent = `${totalMonthHolidays} ${totalMonthHolidays === 1 ? 'giorno' : 'giorni'}`;
 
       if (filteredLogs.length === 0) {
         tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--subtext);">Nessun inserimento per questo mese</td></tr>`;
@@ -576,7 +760,7 @@
       document.getElementById('cancelBtn').style.display = "none";
     };
 
-    window.exportToExcel = function() {
+    window.openPdfExport = function() {
       const startDate = document.getElementById('exportStart').value;
       const endDate = document.getElementById('exportEnd').value;
 
@@ -600,23 +784,23 @@
         return;
       }
 
-      let csvContent = "\uFEFF"; 
-      csvContent += "Data;Tipo;Inizio Mattina;Fine Mattina;Inizio Pomeriggio;Fine Pomeriggio;Ore Lavorate;Straordinario/Permesso;Note\n";
-
       let totalWorkedMins = 0;
       let totalOvertimeMins = 0;
       let totalPermissionMins = 0;
       let holidayCount = 0;
+      let notesList = [];
 
+      let rowsHtml = '';
       filtered.forEach(entry => {
-        const cleanNote = (entry.note || "").replace(/;/g, ",").replace(/\r?\n|\r/g, " ");
-        let tipo = "Lavoro";
-        let strVal = entry.overtimeFormatted;
+        let hoursCell = '';
+        let workedCell = '';
+        let extraCell = '';
 
         if (entry.isHoliday) {
-          tipo = "Ferie";
           holidayCount++;
-          strVal = "00:00";
+          hoursCell = '—';
+          workedCell = '00:00';
+          extraCell = 'FERIE';
         } else {
           const [wH, wM] = entry.workedFormatted.split(':').map(Number);
           totalWorkedMins += (wH * 60 + wM);
@@ -625,22 +809,82 @@
           } else {
             totalPermissionMins += Math.abs(entry.overtimeMinutes);
           }
+          hoursCell = `${entry.startM}–${entry.endM} / ${entry.startA}–${entry.endTime}`;
+          workedCell = entry.workedFormatted;
+          extraCell = entry.overtimeFormatted;
         }
 
-        csvContent += `${formatDateIT(entry.date)};${tipo};${entry.isHoliday ? '-' : entry.startM};${entry.isHoliday ? '-' : entry.endM};${entry.isHoliday ? '-' : entry.startA};${entry.isHoliday ? '-' : entry.endTime};${entry.isHoliday ? '00:00' : entry.workedFormatted};${strVal};"${cleanNote}"\n`;
+        if (entry.note && entry.note.trim()) {
+          notesList.push({ date: formatDateIT(entry.date), text: entry.note.trim() });
+        }
+
+        rowsHtml += `
+          <tr>
+            <td><strong>${formatDateIT(entry.date)}</strong></td>
+            <td>${hoursCell}</td>
+            <td>${workedCell}</td>
+            <td><strong>${extraCell}</strong></td>
+          </tr>
+        `;
       });
 
-      csvContent += `\nTOTALE PERIODO;;;;;;${formatMinutes(totalWorkedMins)};Straord: ${formatMinutes(totalOvertimeMins, true)} / Permessi: ${formatMinutes(totalPermissionMins)};Ferie totali: ${holidayCount} giorni\n`;
+      const notesHtml = notesList.length > 0
+        ? notesList.map(n => `<div class="pdf-note-item"><strong>${n.date}:</strong> ${n.text}</div>`).join('')
+        : `<div class="pdf-note-item" style="color:#666;">Nessuna nota registrata nel periodo.</div>`;
 
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
-      link.setAttribute("download", `Ore_Lavoro_${formatDateIT(startDate).replace(/\//g, '-')}_al_${formatDateIT(endDate).replace(/\//g, '-')}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      document.getElementById('pdfContentArea').innerHTML = `
+        <div class="pdf-header">
+          <div>
+            <h2>Riepilogo Ore di Lavoro</h2>
+            <div style="font-size:0.85rem; color:#444;">Periodo: ${formatDateIT(startDate)} – ${formatDateIT(endDate)}</div>
+          </div>
+          <div style="font-size:0.8rem; color:#666;">Generato il ${formatDateIT(toInputDateStr(new Date()))}</div>
+        </div>
+
+        <table class="pdf-grid">
+          <thead>
+            <tr>
+              <th style="width:18%;">Data</th>
+              <th style="width:36%;">Orari</th>
+              <th style="width:18%;">Tot. Lavorate</th>
+              <th style="width:28%;">Straordinario / Stato</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+
+        <div class="pdf-summary-boxes">
+          <div class="pdf-box">
+            <span>TOTALE ORE LAVORATE</span>
+            <strong>${formatMinutes(totalWorkedMins)}</strong>
+          </div>
+          <div class="pdf-box">
+            <span>TOTALE STRAORDINARI</span>
+            <strong>${formatMinutes(totalOvertimeMins, true)}</strong>
+          </div>
+          <div class="pdf-box">
+            <span>TOTALE PERMESSI</span>
+            <strong>${formatMinutes(totalPermissionMins)}</strong>
+          </div>
+          <div class="pdf-box">
+            <span>TOTALE FERIE</span>
+            <strong>${holidayCount} ${holidayCount === 1 ? 'giorno' : 'giorni'}</strong>
+          </div>
+        </div>
+
+        <div class="pdf-notes-box">
+          <h3>Note del Periodo</h3>
+          ${notesHtml}
+        </div>
+      `;
+
+      document.getElementById('pdfExportModal').style.display = 'block';
+    };
+
+    window.closePdfExport = function() {
+      document.getElementById('pdfExportModal').style.display = 'none';
     };
 
     window.exportToWhatsApp = function() {
@@ -707,7 +951,6 @@
       window.open(whatsappUrl, '_blank');
     };
 
-    // Backup e Ripristino JSON
     window.exportBackupJSON = function() {
       const logs = localStorage.getItem('work_logs') || '[]';
       const blob = new Blob([logs], { type: 'application/json;charset=utf-8;' });
@@ -752,7 +995,6 @@
       reader.readAsText(file);
     };
 
-    // Importazione robusta da file CSV
     window.importCSV = function(event) {
       const file = event.target.files[0];
       if (!file) return;
