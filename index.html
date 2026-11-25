@@ -627,7 +627,7 @@
       document.getElementById('cancelBtn').style.display = "none";
     };
 
-    // Generatore diretto di file .pdf su formato A4 (595 x 842 pt)
+    // Generatore diretto di file .pdf sempre su un singolo foglio A4 (595.28 x 841.89 pt)
     function sanitizePdfText(str) {
       return String(str || '')
         .replace(/–/g, '-')
@@ -675,8 +675,8 @@
     function buildA4PdfBlob(startDate, endDate, filtered) {
       const PAGE_W = 595.28;
       const PAGE_H = 841.89;
-      const MARGIN = 36;
-      const CONTENT_W = PAGE_W - MARGIN * 2; // ~523.28 pt
+      const MARGIN = 28;
+      const CONTENT_W = PAGE_W - MARGIN * 2;
 
       let totalOvertimeMins = 0;
       let totalPermissionMins = 0;
@@ -697,31 +697,49 @@
           extraStr = entry.overtimeFormatted;
         }
         const noteText = (entry.note || '').trim();
-        const noteLines = noteText ? wrapPdfText(`Nota: ${noteText}`, 76) : [];
         return {
           dateStr: formatDateIT(entry.date),
           hoursStr,
           extraStr,
-          noteLines
+          noteText
         };
       });
 
-      const pagesOps = [];
-      let ops = [];
-      let y = PAGE_H - MARGIN;
+      const headerH = 44;
+      const tableHeaderH = 20;
+      const summaryH = 44;
+      const gapAfterTable = 10;
+      const availableForRows = PAGE_H - MARGIN * 2 - headerH - tableHeaderH - gapAfterTable - summaryH;
 
-      function startNewPage() {
-        if (ops.length > 0) {
-          pagesOps.push(ops.join('\n'));
-        }
-        ops = [];
-        y = PAGE_H - MARGIN;
-        ops.push('0.25 w 0 0 0 RG 0 0 0 rg');
-      }
+      const estimatedRows = items.map(it => {
+        const lines = it.noteText ? wrapPdfText(`Nota: ${it.noteText}`, 84) : [];
+        return { ...it, noteLines: lines };
+      });
+
+      const baseDayH = 18;
+      const baseNoteLineH = 10.5;
+      const baseNotePad = 5;
+
+      let rawRowsH = 0;
+      estimatedRows.forEach(r => {
+        rawRowsH += baseDayH + (r.noteLines.length > 0 ? r.noteLines.length * baseNoteLineH + baseNotePad : 0);
+      });
+
+      const scale = rawRowsH > availableForRows && rawRowsH > 0
+        ? Math.max(0.55, availableForRows / rawRowsH)
+        : 1;
+
+      const dayH = Math.max(11, baseDayH * scale);
+      const noteLineH = Math.max(7.5, baseNoteLineH * scale);
+      const notePad = Math.max(2.5, baseNotePad * scale);
+      const fontBody = scale < 0.85 ? 8 : 9.2;
+      const fontNote = scale < 0.85 ? 7.2 : 8.5;
+
+      const ops = ['0.25 w 0 0 0 RG 0 0 0 rg'];
 
       function drawText(font, size, x, topY, text) {
         const pdfY = PAGE_H - topY;
-        ops.push(`BT ${font} ${size} Tf 1 0 0 1 ${x.toFixed(2)} ${pdfY.toFixed(2)} Tm (${sanitizePdfText(text)}) Tj ET`);
+        ops.push(`BT ${font} ${size.toFixed(2)} Tf 1 0 0 1 ${x.toFixed(2)} ${pdfY.toFixed(2)} Tm (${sanitizePdfText(text)}) Tj ET`);
       }
 
       function drawBox(x, topY, w, h, fillGray = null) {
@@ -732,70 +750,48 @@
         ops.push(`q 0.25 w 0.2 0.2 0.2 RG ${x.toFixed(2)} ${pdfY.toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re S Q`);
       }
 
-      const col1W = 95;
-      const col2W = 248;
+      const col1W = 90;
+      const col2W = 255;
       const col3W = CONTENT_W - col1W - col2W;
 
-      function drawTableHeader(topY) {
-        const h = 24;
-        drawBox(MARGIN, topY, col1W, h, 0.9);
-        drawBox(MARGIN + col1W, topY, col2W, h, 0.9);
-        drawBox(MARGIN + col1W + col2W, topY, col3W, h, 0.9);
-        drawText('/F2', 10, MARGIN + 8, topY + 16, 'Data');
-        drawText('/F2', 10, MARGIN + col1W + 8, topY + 16, 'Orari');
-        drawText('/F2', 10, MARGIN + col1W + col2W + 8, topY + 16, 'Straordinario / Stato');
-        return topY + h;
-      }
+      let y = MARGIN;
+      drawText('/F2', 14.5, MARGIN, y + 14, 'Riepilogo Ore di Lavoro');
+      drawText('/F1', 9.5, MARGIN, y + 28, `Periodo: ${formatDateIT(startDate)} - ${formatDateIT(endDate)}   |   Generato il ${formatDateIT(toInputDateStr(new Date()))}`);
+      ops.push(`q 1 w 0 0 0 RG ${MARGIN.toFixed(2)} ${(PAGE_H - (y + 35)).toFixed(2)} m ${(MARGIN + CONTENT_W).toFixed(2)} ${(PAGE_H - (y + 35)).toFixed(2)} l S Q`);
+      y += headerH;
 
-      startNewPage();
-      const topStart = MARGIN;
-      drawText('/F2', 16, MARGIN, topStart + 16, 'Riepilogo Ore di Lavoro (A4)');
-      drawText('/F1', 10, MARGIN, topStart + 32, `Periodo: ${formatDateIT(startDate)} - ${formatDateIT(endDate)}   |   Generato il ${formatDateIT(toInputDateStr(new Date()))}`);
-      ops.push(`q 1 w 0 0 0 RG ${(MARGIN).toFixed(2)} ${(PAGE_H - (topStart + 40)).toFixed(2)} m ${(MARGIN + CONTENT_W).toFixed(2)} ${(PAGE_H - (topStart + 40)).toFixed(2)} l S Q`);
+      drawBox(MARGIN, y, col1W, tableHeaderH, 0.9);
+      drawBox(MARGIN + col1W, y, col2W, tableHeaderH, 0.9);
+      drawBox(MARGIN + col1W + col2W, y, col3W, tableHeaderH, 0.9);
+      drawText('/F2', 9.5, MARGIN + 7, y + 13.5, 'Data');
+      drawText('/F2', 9.5, MARGIN + col1W + 7, y + 13.5, 'Orari');
+      drawText('/F2', 9.5, MARGIN + col1W + col2W + 7, y + 13.5, 'Straordinario / Stato');
+      y += tableHeaderH;
 
-      y = topStart + 52;
-      y = drawTableHeader(y);
-
-      const bottomLimit = PAGE_H - MARGIN - 76;
-
-      items.forEach(item => {
-        const dayH = 22;
-        const noteH = item.noteLines.length > 0 ? (item.noteLines.length * 13 + 8) : 0;
-        const blockH = dayH + noteH;
-
-        if (y + blockH > bottomLimit) {
-          startNewPage();
-          y = drawTableHeader(MARGIN);
-        }
-
+      estimatedRows.forEach(item => {
         drawBox(MARGIN, y, col1W, dayH, null);
         drawBox(MARGIN + col1W, y, col2W, dayH, null);
         drawBox(MARGIN + col1W + col2W, y, col3W, dayH, null);
 
-        drawText('/F2', 9.5, MARGIN + 8, y + 15, item.dateStr);
-        drawText('/F1', 9.5, MARGIN + col1W + 8, y + 15, item.hoursStr);
-        drawText('/F2', 9.5, MARGIN + col1W + col2W + 8, y + 15, item.extraStr);
+        const textOffsetY = dayH * 0.68;
+        drawText('/F2', fontBody, MARGIN + 7, y + textOffsetY, item.dateStr);
+        drawText('/F1', fontBody, MARGIN + col1W + 7, y + textOffsetY, item.hoursStr);
+        drawText('/F2', fontBody, MARGIN + col1W + col2W + 7, y + textOffsetY, item.extraStr);
         y += dayH;
 
-        if (noteH > 0) {
-          drawBox(MARGIN, y, CONTENT_W, noteH, 0.97);
-          let ny = y + 14;
+        if (item.noteLines.length > 0) {
+          const noteBoxH = item.noteLines.length * noteLineH + notePad;
+          drawBox(MARGIN, y, CONTENT_W, noteBoxH, 0.97);
+          let ny = y + noteLineH * 0.95;
           item.noteLines.forEach(line => {
-            drawText('/F1', 9, MARGIN + 10, ny, line);
-            ny += 13;
+            drawText('/F1', fontNote, MARGIN + 8, ny, line);
+            ny += noteLineH;
           });
-          y += noteH;
+          y += noteBoxH;
         }
       });
 
-      const summaryH = 54;
-      if (y + 14 + summaryH > PAGE_H - MARGIN) {
-        startNewPage();
-        y = MARGIN;
-      } else {
-        y += 14;
-      }
-
+      const summaryY = Math.max(y + gapAfterTable, PAGE_H - MARGIN - summaryH);
       const gap = 10;
       const boxW = (CONTENT_W - gap * 2) / 3;
       const summaries = [
@@ -806,39 +802,22 @@
 
       summaries.forEach((s, idx) => {
         const bx = MARGIN + idx * (boxW + gap);
-        drawBox(bx, y, boxW, summaryH, 0.96);
-        drawText('/F1', 8, bx + 10, y + 16, s.label);
-        drawText('/F2', 13, bx + 10, y + 38, s.val);
+        drawBox(bx, summaryY, boxW, summaryH, 0.96);
+        drawText('/F1', 7.5, bx + 8, summaryY + 13, s.label);
+        drawText('/F2', 11.5, bx + 8, summaryY + 32, s.val);
       });
 
-      if (ops.length > 0) {
-        pagesOps.push(ops.join('\n'));
-      }
-
-      const numPages = pagesOps.length;
-      const objects = [];
-      // 1: Catalog, 2: Pages, 3: Font F1, 4: Font F2
-      objects.push('<< /Type /Catalog /Pages 2 0 R >>');
-      const kidsRefs = [];
-      const firstPageObjId = 5;
-      for (let i = 0; i < numPages; i++) {
-        kidsRefs.push(`${firstPageObjId + i * 2} 0 R`);
-      }
-      objects.push(`<< /Type /Pages /Kids [ ${kidsRefs.join(' ')} ] /Count ${numPages} >>`);
-      objects.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
-      objects.push('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
-
-      for (let i = 0; i < numPages; i++) {
-        const pageObjId = firstPageObjId + i * 2;
-        const contentObjId = pageObjId + 1;
-        const streamData = pagesOps[i];
-        const byteLen = new TextEncoder().encode(streamData).length;
-        objects.push(
-          `<< /Type /Page /Parent 2 0 R /MediaBox [ 0 0 ${PAGE_W.toFixed(2)} ${PAGE_H.toFixed(2)} ] ` +
-          `/Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${contentObjId} 0 R >>`
-        );
-        objects.push(`<< /Length ${byteLen} >>\nstream\n${streamData}\nendstream`);
-      }
+      const streamData = ops.join('\n');
+      const byteLen = new TextEncoder().encode(streamData).length;
+      const objects = [
+        '<< /Type /Catalog /Pages 2 0 R >>',
+        '<< /Type /Pages /Kids [ 5 0 R ] /Count 1 >>',
+        '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>',
+        '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>',
+        `<< /Type /Page /Parent 2 0 R /MediaBox [ 0 0 ${PAGE_W.toFixed(2)} ${PAGE_H.toFixed(2)} ] ` +
+        `/Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>`,
+        `<< /Length ${byteLen} >>\nstream\n${streamData}\nendstream`
+      ];
 
       let pdf = '%PDF-1.4\n';
       const offsets = [0];
